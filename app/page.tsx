@@ -1,4 +1,6 @@
 import Link from "next/link"
+import { FeaturedProjectsCarousel } from "@/components/FeaturedProjectsCarousel"
+import { HeroVisual } from "@/components/HeroVisual"
 import { history, projects } from "@/lib/portfolio"
 
 export default function HomePage() {
@@ -31,13 +33,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hero-visual" aria-label="장주민 포트폴리오 소개 카드">
-          <div className="visual-label">CURRENT FOCUS</div>
-          <div className="visual-orbit visual-orbit-one" />
-          <div className="visual-orbit visual-orbit-two" />
-          <div className="visual-core">WEB<br />×<br />SECURITY</div>
-          <p>Next.js · JavaScript · Linux</p>
-        </div>
+        <HeroVisual />
       </section>
 
       <section className="section-shell home-section">
@@ -51,25 +47,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="featured-grid">
-          {projects.slice(0, 2).map((project, index) => (
-            <article className={`project-card accent-${project.accent}`} key={project.id}>
-              <div className="project-preview">
-                <span>0{index + 1}</span>
-                <div className="preview-window">
-                  <i />
-                  <i />
-                  <i />
-                </div>
-              </div>
-              <div className="project-body">
-                <p className="project-category">{project.category}</p>
-                <h3>{project.title}</h3>
-                <p>{project.description}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+        <FeaturedProjectsCarousel projects={projects} />
       </section>
 
       <section className="section-shell home-section about-grid">
@@ -113,4 +91,3 @@ export default function HomePage() {
     </>
   )
 }
-

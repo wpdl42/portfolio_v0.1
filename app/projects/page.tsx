@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { PageIntro } from "@/components/PageIntro"
 import { projects } from "@/lib/portfolio"
 
@@ -17,7 +18,7 @@ export default function ProjectsPage() {
 
       <div className="project-list">
         {projects.map((project) => (
-          <article className="project-row" key={project.id}>
+          <Link className="project-row" href={`/projects/${project.id}`} key={project.id}>
             <div className={`project-number accent-${project.accent}`}>
               {String(project.id).padStart(2, "0")}
             </div>
@@ -40,16 +41,11 @@ export default function ProjectsPage() {
                   <dd>{project.role}</dd>
                 </div>
               </dl>
-              {project.link && (
-                <a href={project.link} target="_blank" rel="noreferrer" className="text-link">
-                  프로젝트 방문하기 ↗
-                </a>
-              )}
+              <span className="text-link">상세 보기 →</span>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </div>
   )
 }
-
