@@ -1,8 +1,7 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import type { ReactNode } from "react"
-import { SiteFooter } from "@/components/SiteFooter"
-import { SiteHeader } from "@/components/SiteHeader"
 import "./globals.css"
+import "./orb.css"
 
 export const metadata: Metadata = {
   title: {
@@ -12,13 +11,13 @@ export const metadata: Metadata = {
   description: "정보보호학과 학생 장주민의 학습 및 프로젝트 포트폴리오",
 }
 
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#f8f6f3" }
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
-        <SiteHeader />
         <main>{children}</main>
-        <SiteFooter />
       </body>
     </html>
   )

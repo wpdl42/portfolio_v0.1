@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" fill="none">
+  <defs>
+    <linearGradient id="bg" x2="1200" y2="640" gradientUnits="userSpaceOnUse"><stop stop-color="#f7e6dd"/><stop offset=".55" stop-color="#faf1e9"/><stop offset="1" stop-color="#e8cbb9"/></linearGradient>
+    <linearGradient id="block" x1="405" y1="170" x2="790" y2="460" gradientUnits="userSpaceOnUse"><stop stop-color="#fff9f1"/><stop offset="1" stop-color="#d8b89e"/></linearGradient>
+  </defs>
+  <path fill="url(#bg)" d="M0 0h1200v640H0z"/>
+  <g stroke="#c8a98d" stroke-opacity=".5" stroke-width="1.5"><path d="m220 490 390-220 390 220-390 220zM220 390l390-220 390 220M220 290 610 70l390 220"/><path d="M610 70v640M220 290v200M1000 290v200"/></g>
+  <path d="m405 335 205-117 205 117v153L610 605 405 488z" fill="url(#block)" stroke="#fff8f1" stroke-width="2"/>
+  <path d="m405 335 205 118 205-118M610 453v152" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>
+  <path d="m427 221 183-106 183 106-183 106z" fill="#fdf7ed" stroke="#d1af94" stroke-width="2"/>
+  <path d="m470 225 140 81 139-81M610 327v56" stroke="#b99476" stroke-width="3"/>
+  <g stroke="#b58d6c" stroke-width="5" stroke-linecap="round"><path d="M517 375v44M557 398v44M663 442v-44M703 419v-44"/></g>
+  <g fill="#977255" font-family="Arial,sans-serif"><text x="87" y="108" font-size="16" letter-spacing="5">CAMPUS SYSTEM</text><text x="87" y="553" font-size="13" letter-spacing="3">JAVA · STUDENTS · COURSES</text></g>
+</svg>

@@ -28,6 +28,21 @@
   box-sizing: border-box;
 }
 
+/* Hide the scrollbar on the document and every nested scroll container.
+   Keep each container's existing overflow and input behavior intact. */
+*,
+*::before,
+*::after {
+  scrollbar-width: none;
+  scrollbar-gutter: auto;
+}
+
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 html {
   scroll-behavior: smooth;
 }

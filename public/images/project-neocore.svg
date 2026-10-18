@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" fill="none">
+  <defs>
+    <linearGradient id="bg" x2="1200" y2="640" gradientUnits="userSpaceOnUse"><stop stop-color="#e4eafa"/><stop offset=".5" stop-color="#f2f4fc"/><stop offset="1" stop-color="#c8d8f0"/></linearGradient>
+    <linearGradient id="core" x1="470" y1="170" x2="750" y2="470" gradientUnits="userSpaceOnUse"><stop stop-color="#fafcff"/><stop offset=".45" stop-color="#b1c5eb"/><stop offset="1" stop-color="#658fc9"/></linearGradient>
+    <radialGradient id="halo"><stop stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <path fill="url(#bg)" d="M0 0h1200v640H0z"/>
+  <ellipse cx="630" cy="325" rx="370" ry="290" fill="url(#halo)"/>
+  <g stroke="#a0b6d8" stroke-opacity=".6" stroke-width="2">
+    <ellipse cx="630" cy="320" rx="285" ry="130" transform="rotate(-24 630 320)"/>
+    <ellipse cx="630" cy="320" rx="260" ry="175" transform="rotate(42 630 320)"/>
+    <path d="m370 253 260 67 197-162M630 320l238 145M630 320 431 491M630 320l22-231"/>
+  </g>
+  <path d="m630 167 136 79v157l-136 79-136-79V246z" fill="url(#core)" stroke="#fff" stroke-width="2"/>
+  <path d="m494 246 136 79 136-79M630 325v157" stroke="#fff" stroke-opacity=".8" stroke-width="2"/>
+  <g fill="#f7faff" stroke="#b5c5dd" stroke-width="2"><circle cx="370" cy="253" r="24"/><circle cx="827" cy="158" r="17"/><circle cx="868" cy="465" r="28"/><circle cx="431" cy="491" r="16"/><circle cx="652" cy="89" r="11"/></g>
+  <g fill="#547498" font-family="Arial,sans-serif"><text x="87" y="108" font-size="16" letter-spacing="5">NEOCORE</text><text x="87" y="553" font-size="13" letter-spacing="3">AI · WEB · CONNECTION</text></g>
+</svg>

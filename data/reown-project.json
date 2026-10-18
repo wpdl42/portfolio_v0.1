@@ -1,0 +1,46 @@
+{
+  "id": 4,
+  "slug": "reown",
+  "title": "거래소",
+  "category": "Web · Team · 중고거래",
+  "description": "React와 Next.js를 사용한 거래소 프로젝트입니다. 백엔드 개발을 담당하며 MongoDB 연동을 처음 적용했습니다.",
+  "role": "백엔드 개발",
+  "period": "9월~12월 · 2026",
+  "accent": "blue",
+  "link": "https://reown-eight.vercel.app/",
+  "canonicalUrl": "https://reown-eight.vercel.app",
+  "visibility": "public",
+  "order": 4,
+  "thumbnail": "/images/project-reown.png",
+  "keywords": [
+    "거래소",
+    "거래소 프로젝트",
+    "REOWN",
+    "reown",
+    "중고거래",
+    "백엔드",
+    "MongoDB"
+  ],
+  "detail": {
+    "tags": ["React", "Next.js", "MongoDB"],
+    "process": "9월부터 12월까지 진행할 프로젝트로, 백엔드 개발을 담당했습니다. 프로젝트에 MongoDB 연동을 처음 적용하며 데이터베이스 연결 경험을 쌓았습니다.",
+    "learnings": [
+      "MongoDB를 프로젝트에 처음 연동한 경험",
+      "백엔드 개발 역할로 데이터베이스와 프로젝트를 연결한 경험"
+    ],
+    "overview": "중고 물품을 탐색하고 거래하는 웹 애플리케이션입니다.",
+    "features": [
+      "공개 상품 목록과 상품 상세 화면",
+      "상품명 검색, 카테고리 필터와 정렬 UI",
+      "지역 선택과 관심 상품 UI",
+      "로그인·회원가입 화면 및 판매 등록 화면",
+      "안전거래 안내 화면 — 서비스 준비 중"
+    ],
+    "technologyNote": "해당 프로젝트에 사용된 관련 기술들 입니다.",
+    "sources": [
+      "https://reown-eight.vercel.app/",
+      "https://reown-eight.vercel.app/market",
+      "https://reown-eight.vercel.app/safedeal"
+    ]
+  }
+}

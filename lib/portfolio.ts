@@ -1,3 +1,6 @@
+import reownProject from "@/data/reown-project.json"
+import type { ProjectDetail } from "@/lib/project-details"
+
 export type Project = {
   id: number
   title: string
@@ -5,9 +8,16 @@ export type Project = {
   description: string
   role: string
   period: string
-  status: "진행 중" | "완료" | "예정"
+  status?: "진행 중" | "완료" | "예정"
   accent: string
   link?: string
+  slug?: string
+  canonicalUrl?: string
+  visibility?: "public" | "private"
+  order?: number
+  thumbnail?: string
+  keywords?: string[]
+  detail?: ProjectDetail
 }
 
 export type Skill = {
@@ -51,6 +61,7 @@ export const projects: Project[] = [
     status: "진행 중",
     accent: "green",
   },
+  reownProject as Project,
 ]
 
 export const assignments = [
