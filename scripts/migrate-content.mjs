@@ -4,7 +4,6 @@ import {readFile} from 'node:fs/promises'
 import {parseCmsValues,toFormValues} from '../lib/cms/schema.ts'
 import {ensureContentIndexes} from '../lib/cms/indexes.mjs'
 import {getProjectDatabaseName} from '../lib/projects/storage.mjs'
-import {migrateContactLinks} from '../lib/cms/migrate-contact-links.mjs'
 
 nextEnv.loadEnvConfig(process.cwd())
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is required')
@@ -71,8 +70,6 @@ try {
     const result=await content.updateOne({_id:entry.key},{$setOnInsert:{kind:entry.kind,data:entry.kind==='contact'?{...entry.data,...parsed.data}:parsed.data,...(entry.kind==='notes'?{slugs:[parsed.data.slug]}:{}),version:1,createdAt:now,updatedAt:now}},{upsert:true})
     inserted+=result.upsertedCount; preserved+=result.upsertedCount?0:1
   }
-  phase='contact-links'
-  inserted += await migrateContactLinks(db)
   console.log(JSON.stringify({database:getProjectDatabaseName(),inserted,preserved,missingFieldsAdded:addedFields,projects:await projects.countDocuments({}),content:await content.countDocuments({})}))
 } catch(error) {
   const safe=String(error?.message??'').match(/^(INVALID_SOURCE_PROJECT:[\w.,]+|INVALID_SOURCE_CONTENT:[\w:-]+|AMBIGUOUS_PROJECT_MATCH|INVALID_CONTACT_LINK)$/)?.[0]??`MIGRATION_FAILED${Number.isSafeInteger(error?.code)?':'+error.code:''}`

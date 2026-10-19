@@ -18,9 +18,6 @@ export async function checkSoftDeletion({ base, api, list, save, db, testCode, r
   const skill=await create('skills',{name:'Trash fixture skill',group:'Test group',description:'Related usage',projectIds:project.key})
   await create('journey',{title:'Trash fixture journey',description:'Disposable timeline'})
   await create('notes',{title:'Trash fixture note',slug:'trash-fixture-note',body:'Disposable note body'})
-  await create('about-sections',{title:'Trash fixture introduction',body:'Disposable introduction',section:'interests'})
-  await create('contact-links',{label:'Trash fixture link',url:'https://example.com/trash-fixture',type:'other'})
-  await create('contact-links',{label:'Trash fixture email',email:'cms-test@example.com',type:'email'})
   const name = item => String(item.data.title??item.data.name??item.data.label)
   const first=fixtures[0]
   assert.equal((await remove(first.kind,first.item,false)).status,401)
@@ -63,7 +60,7 @@ export async function checkSoftDeletion({ base, api, list, save, db, testCode, r
   const migration=await runChild(['scripts/migrate-content.mjs']);assert.equal(migration.inserted,0)
   assert.ok((await raw('projects','1')).deletedAt)
   await restore('projects',(await trash()).find(item=>item.kind==='projects'&&item.key==='1'))
-  console.log('PASS soft-delete API: six targets, protected singletons, authentication/CSRF/IDs/conflicts, tombstones, idempotence, hidden details/search/links, restore, migration preservation')
+  console.log('PASS soft-delete API: four targets, protected About/Contact/categories, authentication/CSRF/IDs/conflicts, tombstones, restore, migration preservation')
 
   const browser=await openTestBrowser()
   try {
@@ -83,7 +80,7 @@ export async function checkSoftDeletion({ base, api, list, save, db, testCode, r
     await send('Network.enable')
     for(const fixture of fixtures) {
       const {kind}=fixture
-      if(kind==='about-sections'||kind==='contact-links') await viewport(390,844)
+      if(kind==='notes') await viewport(390,844)
       await goto(`${base}/admin/${kind}`);await wait('!!document.querySelector(".cms-admin")')
       await evaluate(`[...document.querySelectorAll('.cms-items button')].find(n=>n.querySelector('strong')?.textContent===${JSON.stringify(name(fixture.item))}).click()`)
       const before=await raw(kind,fixture.item.key)
@@ -120,6 +117,6 @@ export async function checkSoftDeletion({ base, api, list, save, db, testCode, r
       await restore(kind,(await trash()).find(item=>item.kind===kind&&item.key===fixture.item.key))
     }
     assert.deepEqual(browser.errors,[])
-    console.log('PASS soft-delete browser: /admin search→login/authenticated shortcut, keyboard/Escape, six cancel/failure/delete/restore flows, mobile, refresh, linked content, detail redirect')
+    console.log('PASS soft-delete browser: /admin search, four cancel/failure/delete/restore flows, protected editorial documents, mobile, detail redirect')
   } finally { await browser.close() }
 }

@@ -1,12 +1,12 @@
-export const cmsKinds = ["projects", "skills", "journey", "notes", "about", "contact", "categories", "about-sections", "contact-links"] as const
+export const cmsKinds = ["projects", "skills", "journey", "notes", "about", "contact", "categories"] as const
 export type CmsKind = typeof cmsKinds[number]
-export const cmsNavigation = cmsKinds.filter(kind => kind !== "about-sections" && kind !== "contact-links")
-export const deletableCmsKinds: readonly CmsKind[] = ["projects", "skills", "journey", "notes", "about-sections", "contact-links"]
+export const cmsNavigation = cmsKinds
+export const deletableCmsKinds: readonly CmsKind[] = ["projects", "skills", "journey", "notes"]
 export const canDeleteCmsKind = (kind: CmsKind) => deletableCmsKinds.includes(kind)
 export type CmsField = { name: string; label: string; type?: "textarea" | "url" | "email" | "color" | "number" | "date" | "tags" | "lines" | "ids" | "links" | "select"; required?: boolean; max?: number; options?: string[]; initial?: string; hint?: string }
 const visibility: CmsField = { name: "visibility", label: "공개 여부", type: "select", options: ["private", "public"], initial: "private" }
 const order: CmsField = { name: "order", label: "표시 순서", type: "number", initial: "0" }
-export const cmsLabels: Record<CmsKind, string> = { projects: "Projects", skills: "Skills", journey: "Journey", notes: "Notes", about: "About", contact: "Contact", categories: "위성 표시 설정", "about-sections": "추가 소개 항목", "contact-links": "개별 연락 링크" }
+export const cmsLabels: Record<CmsKind, string> = { projects: "Projects", skills: "Skills", journey: "Journey", notes: "Notes", about: "About", contact: "Contact", categories: "위성 표시 설정" }
 export const cmsFields: Record<CmsKind, CmsField[]> = {
   projects: [
     { name: "title", label: "제목", required: true, max: 120 }, { name: "category", label: "분류", required: true, max: 120, initial: "Web" },
@@ -27,9 +27,7 @@ export const cmsFields: Record<CmsKind, CmsField[]> = {
     { name: "name", label: "이름", required: true, max: 120 }, { name: "homeName", label: "홈 표시 이름", required: true, max: 120 }, { name: "lead", label: "한 줄 소개", max: 300 }, { name: "homeRole", label: "홈 역할 소개", max: 300 },
     { name: "bioTitle", label: "자기소개 제목", max: 160 }, { name: "bio", label: "자기소개", type: "textarea" }, { name: "interestsTitle", label: "관심 분야 제목", max: 160 }, { name: "interests", label: "관심 분야", type: "textarea" }, { name: "workStyleTitle", label: "작업 방식 제목", max: 160 }, { name: "workStyle", label: "작업 방식", type: "textarea" }, { name: "resume", label: "이력서 URL", type: "url" },
   ],
-  contact: [{ name: "heading", label: "연락 유도 문구", required: true, max: 200 }, { name: "intro", label: "소개 문구", type: "textarea", max: 1500 }],
-  "about-sections": [{ name: "section", label: "소개 분류", type: "select", options: ["bio", "interests", "workStyle"], initial: "bio" }, { name: "title", label: "제목", required: true, max: 160 }, { name: "body", label: "내용", required: true, type: "textarea" }, order, visibility],
-  "contact-links": [{ name: "label", label: "표시 문구", required: true, max: 100 }, { name: "type", label: "링크 종류", type: "select", options: ["github", "blog", "other", "email"], initial: "other" }, { name: "url", label: "연락 링크 URL", type: "url", hint: "이메일 이외의 링크는 http(s) 주소를 입력합니다." }, { name: "email", label: "이메일 주소", type: "email", max: 254, hint: "링크 종류가 email인 경우 입력합니다." }, order, visibility],
+  contact: [{ name: "heading", label: "연락 유도 문구", required: true, max: 200 }, { name: "intro", label: "소개 문구", type: "textarea", max: 1500 }, { name: "email", label: "이메일", type: "email", max: 254 }, { name: "github", label: "GitHub URL", type: "url" }, { name: "githubLabel", label: "GitHub 표시 문구", max: 100 }, { name: "blog", label: "블로그 URL", type: "url" }, { name: "blogLabel", label: "블로그 표시 문구", max: 100 }, { name: "links", label: "추가 연락 링크", type: "links", hint: "한 줄에 표시 문구 | https://주소" }],
   categories: [{ name: "label", label: "표시 이름", required: true, max: 60 }, { name: "intro", label: "소개 문구", type: "textarea", max: 1500 }, { name: "summary", label: "보조 설명", type: "textarea", max: 1500 }, { name: "color", label: "고유 색상", type: "color", required: true }, order, { name: "keywords", label: "검색 키워드", type: "tags" }],
 }
 export function isCmsKind(value: string): value is CmsKind { return (cmsKinds as readonly string[]).includes(value) }
@@ -79,6 +77,5 @@ export function parseCmsValues(kind: CmsKind, input: unknown) {
   }
   if (kind === "notes" && typeof data.slug === "string" && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.slug)) errors.slug = "소문자 영문·숫자·하이픈만 사용할 수 있습니다."
   if (kind === "journey" && data.startDate && data.endDate && String(data.startDate) > String(data.endDate)) errors.endDate = "종료일은 시작일보다 빠를 수 없습니다."
-  if (kind === "contact-links" && (data.type === "email" ? !data.email : !data.url)) errors[data.type === "email" ? "email" : "url"] = "선택한 링크 종류에 맞는 주소를 입력해 주세요."
   return { data, errors, valid: Object.keys(errors).length === 0 }
 }

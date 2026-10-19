@@ -32,7 +32,7 @@ export function searchPortfolio(query: string, catalog: Project[] = [], content?
     ...(content?.notes ?? []).map((note): SearchItem => ({ id: `note-${note.id}`, label: note.title, category: "notes", kind: "note", tags: note.tags, description: note.description, noteId: note.slug })),
     ...(content?.skills ?? []).map((skill): SearchItem => ({ id: `skill-${skill.id}`, label: `${skill.name} 활용 경험`, category: "skills", kind: "skill", tags: [skill.name, skill.group], description: skill.description })),
     ...(content?.journey ?? []).map((item): SearchItem => ({ id: `journey-${item.id}`, label: item.title, category: "journey", kind: "learning", tags: [item.activityType, item.period], description: item.description })),
-    ...(content?.about?.name ? [{ id: "about-me", label: content.about.name, category: "about" as const, kind: "page" as const, tags: ["소개", "profile"], description: `${content.about.lead} ${content.about.bio} ${(content.about.sections ?? []).map(item => `${item.title} ${item.body}`).join(" ")}` }] : []),
+    ...(content?.about?.name ? [{ id: "about-me", label: content.about.name, category: "about" as const, kind: "page" as const, tags: ["소개", "profile"], description: `${content.about.lead} ${content.about.bio}` }] : []),
     ...navigation.map((category): SearchItem => ({ id: category.id, label: category.label, category: category.id, kind: "category", tags: [category.id, ...category.keywords], description: category.intro })),
   ]
   const ranked = items.flatMap((item, order) => {

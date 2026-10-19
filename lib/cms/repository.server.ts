@@ -7,7 +7,7 @@ import { getProjectDatabaseName } from "@/lib/projects/storage.mjs"
 import type { Project } from "@/lib/projects/types"
 import { categories as navigationDefaults, type Category } from "@/lib/orb-content"
 import { categoryIds, type CmsItem, type PortfolioContent } from "./types"
-import { parseCmsValues, toFormValues, type CmsKind } from "./schema"
+import { cmsFields, parseCmsValues, toFormValues, type CmsKind } from "./schema"
 import { ensureContentIndexes } from "./indexes.mjs"
 
 export type ContentDocument = { _id: string; kind: CmsKind; data: Record<string, unknown>; slugs?: string[]; version?: number; createdAt?: Date; updatedAt?: Date; deletedAt?: Date | null }
@@ -49,6 +49,8 @@ export async function listAdminContent(kind: CmsKind, deleted = false): Promise<
   return (await db.collection<ContentDocument>("portfolio_content").find({ kind, ...deletionFilter }, { maxTimeMS: 5000 }).sort({ "data.order": 1, _id: 1 }).limit(1000).toArray()).map(contentItem)
 }
 export async function saveCmsContent(kind: CmsKind, values: unknown, key?: string, version?: number) {
+  // Reject the previous two-field Contact form so an open stale tab cannot clear links.
+  if (kind === "contact" && key && values && typeof values === "object" && cmsFields.contact.some(field => !Object.hasOwn(values, field.name))) throw new CmsError(409, "Contact 관리 화면이 변경되었습니다. 페이지를 새로고침한 뒤 다시 저장해 주세요.")
   const parsed = parseCmsValues(kind, values)
   if (!parsed.valid) throw new CmsError(422, "입력한 내용을 확인해 주세요.", parsed.errors)
   if (key !== undefined && (!Number.isSafeInteger(version) || Number(version) < 0)) throw new CmsError(400, "수정 버전이 필요합니다.")
@@ -110,7 +112,7 @@ export const getPortfolioContent = cache(async (): Promise<PortfolioContent> => 
     const db = await cmsDatabase()
     const [projects, documents] = await Promise.all([
       db.collection("projects").find({ visibility: "public", deletedAt: null }, { maxTimeMS: 5000 }).sort({ order: 1, id: 1 }).limit(1000).toArray(),
-      db.collection<ContentDocument>("portfolio_content").find({ deletedAt: null, $or: [{ kind: { $in: ["about", "contact", "categories"] } }, { kind: { $in: ["skills", "journey", "notes", "about-sections", "contact-links"] }, "data.visibility": "public" }] }, { maxTimeMS: 5000 }).sort({ "data.order": 1, _id: 1 }).limit(3000).toArray(),
+      db.collection<ContentDocument>("portfolio_content").find({ deletedAt: null, $or: [{ kind: { $in: ["about", "contact", "categories"] } }, { kind: { $in: ["skills", "journey", "notes"] }, "data.visibility": "public" }] }, { maxTimeMS: 5000 }).sort({ "data.order": 1, _id: 1 }).limit(3000).toArray(),
     ])
     const valid = documents.flatMap(document => { const parsed = parseCmsValues(document.kind, toFormValues(document.kind, document.data)); return parsed.valid ? [{ ...document, data: parsed.data }] : [] })
     const categoryDocs = valid.filter(item => item.kind === "categories" && categoryIds.includes(item._id.slice(11) as typeof categoryIds[number]))
@@ -119,10 +121,7 @@ export const getPortfolioContent = cache(async (): Promise<PortfolioContent> => 
     const visibleIds = new Set(publicProjects.map(project => project.id))
     const items = (kind: CmsKind) => valid.filter(item => item.kind === kind).map(item => ({ ...item.data, id: item._id.slice(kind.length+1) }))
     const skills = items("skills").map(item => ({ ...item, projectIds: ((item as Record<string, unknown>).projectIds as number[]).filter(id => visibleIds.has(id)) }))
-    const links = items("contact-links") as unknown as { label: string; url: string; email: string; type: string }[]
-    const github = links.find(link => link.type === "github"), blog = links.find(link => link.type === "blog"), email = links.find(link => link.type === "email")
-    const contact = { ...(valid.find(item => item.kind === "contact")?.data ?? {}), email: email?.email ?? "", emailLabel: email?.label ?? "", github: github?.url ?? "", githubLabel: github?.label ?? "", blog: blog?.url ?? "", blogLabel: blog?.label ?? "", links: links.filter(link => link !== github && link !== blog && link !== email).map(link => ({ label: link.label, url: link.type === "email" ? `mailto:${link.email}` : link.url })) }
-    return { categories, projects: publicProjects, skills, journey: items("journey"), notes: items("notes"), about: { ...(valid.find(item => item.kind === "about")?.data ?? {}), sections: items("about-sections") }, contact, status: categoryDocs.length === 6 ? "ready" : "empty" } as PortfolioContent
+    return { categories, projects: publicProjects, skills, journey: items("journey"), notes: items("notes"), about: valid.find(item => item.kind === "about")?.data ?? {}, contact: valid.find(item => item.kind === "contact")?.data ?? {}, status: categoryDocs.length === 6 ? "ready" : "empty" } as PortfolioContent
   } catch { return base }
 })
 export async function findPublicNote(slug: string, includePrivate = false) {

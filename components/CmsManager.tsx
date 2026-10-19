@@ -92,15 +92,12 @@ export function CmsManager({ kind, initialItems, expiresAt }: { kind: CmsKind; i
     } catch { setDeleteError("삭제를 완료하지 못했습니다. 입력 내용은 유지됩니다. 연결 상태를 확인하고 다시 시도해 주세요.") }
     finally { submitting.current = false; setBusy(false) }
   }
-  const parentKind = kind === "about-sections" ? "about" : kind === "contact-links" ? "contact" : kind
   const selectedTitle = selected ? String(selected.data.title ?? selected.data.name ?? selected.data.label ?? selected.key) : ""
-  const previewUrl = kind === "projects" && selected ? `/projects/${selected.key}` : kind === "notes" && selected ? `/notes/${String(selected.data.slug)}` : `/?category=${parentKind === "categories" ? "projects" : parentKind}&view=expanded`
+  const previewUrl = kind === "projects" && selected ? `/projects/${selected.key}` : kind === "notes" && selected ? `/notes/${String(selected.data.slug)}` : `/?category=${kind === "categories" ? "projects" : kind}&view=expanded`
   const thumbnail = values.thumbnail
   return <div className="cms-admin">
     <header className="cms-admin-header"><div><p className="cms-eyebrow">PORTFOLIO CONTENT</p><h1>{cmsLabels[kind]} 관리</h1></div><div><Link href="/" onClick={navigate}>홈</Link><a href={previewUrl} target="_blank" rel="noreferrer">공개 화면 ↗</a><button type="button" disabled={busy} onClick={logout}>로그아웃</button></div></header>
-    <nav className="cms-admin-nav" aria-label="콘텐츠 종류">{cmsNavigation.map(section => <Link key={section} href={`/admin/${section}`} aria-current={parentKind === section ? "page" : undefined} onClick={navigate}>{cmsLabels[section]}</Link>)}<Link href="/admin/trash" onClick={navigate}>휴지통</Link></nav>
-    {parentKind === "about" && <nav className="cms-subnav" aria-label="About 편집"><Link href="/admin/about" onClick={navigate}>기본 소개</Link><Link href="/admin/about-sections" onClick={navigate}>추가 소개·관심 분야·작업 방식 항목</Link></nav>}
-    {parentKind === "contact" && <nav className="cms-subnav" aria-label="Contact 편집"><Link href="/admin/contact" onClick={navigate}>기본 연락 안내</Link><Link href="/admin/contact-links" onClick={navigate}>개별 연락 링크 추가·수정·삭제</Link></nav>}
+    <nav className="cms-admin-nav" aria-label="콘텐츠 종류">{cmsNavigation.map(section => <Link key={section} href={`/admin/${section}`} aria-current={kind === section ? "page" : undefined} onClick={navigate}>{cmsLabels[section]}</Link>)}<Link href="/admin/trash" onClick={navigate}>휴지통</Link></nav>
     {expired && <p className="cms-alert" role="alert">관리자 세션이 만료되었습니다. 입력 내용은 유지됩니다. <a href={`/admin/login?returnTo=/admin/${kind}`} target="_blank" rel="noreferrer">새 탭에서 다시 로그인 ↗</a> 후 저장을 다시 눌러 주세요.</p>}
     <div className="cms-admin-grid"><aside className="cms-items" aria-label="편집 항목">
       {!singleton && <button type="button" className="cms-add" disabled={busy} onClick={() => choose(null)}>+ 새 항목 추가</button>}

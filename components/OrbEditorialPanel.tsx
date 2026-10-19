@@ -40,16 +40,13 @@ export function OrbEditorialPanel({ category, open, onClose, content, isAdmin }:
       {category === "contact" ? <div className="orb-contact-type">
         <p className="orb-editorial-eyebrow">{content.categories.find(item => item.id === "contact")?.label}</p><h1 id="orb-editorial-title" tabIndex={-1}>{contactDetails.heading || "연락처 등록 예정"}</h1>
         <p className="orb-contact-intro">{contactDetails.intro}</p>
-        <div className="orb-contact-email">{contactDetails.email ? <><span>{contactDetails.emailLabel}</span><a href={`mailto:${contactDetails.email}`}>{contactDetails.email}</a><button onClick={copyEmail}>이메일 복사</button></> : <p>이메일 <span>등록 예정</span></p>}<span role="status" aria-live="polite">{copyStatus}</span></div>
+        <div className="orb-contact-email">{contactDetails.email ? <><a href={`mailto:${contactDetails.email}`}>{contactDetails.email}</a><button onClick={copyEmail}>이메일 복사</button></> : <p>이메일 <span>등록 예정</span></p>}<span role="status" aria-live="polite">{copyStatus}</span></div>
         <nav aria-label="외부 연락 링크">{contactDetails.github && <a href={contactDetails.github} target="_blank" rel="noreferrer">{contactDetails.githubLabel || "GitHub"} <span>새 탭 ↗</span></a>}{contactDetails.blog && <a href={contactDetails.blog} target="_blank" rel="noreferrer">{contactDetails.blogLabel || "Blog"} <span>새 탭 ↗</span></a>}{(contactDetails.links ?? []).map(link => <a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.label} <span>새 탭 ↗</span></a>)}</nav>
       </div> : <div className="orb-about-editorial">
         <p className="orb-editorial-eyebrow">{content.categories.find(item => item.id === "about")?.label}</p><h1 id="orb-editorial-title" tabIndex={-1}>{about.name || "소개 등록 예정"}</h1><p className="orb-about-lead">{about.lead}</p>
         <section><h2>{about.bioTitle}</h2><p>{about.bio}</p></section>
-        {(about.sections ?? []).filter(item => item.section === "bio").map(item => <section key={item.id}><h2>{item.title}</h2><p>{item.body}</p></section>)}
         <section><h2>{about.interestsTitle}</h2><p>{about.interests}</p></section>
-        {(about.sections ?? []).filter(item => item.section === "interests").map(item => <section key={item.id}><h2>{item.title}</h2><p>{item.body}</p></section>)}
         <section><h2>{about.workStyleTitle}</h2><p>{about.workStyle}</p></section>
-        {(about.sections ?? []).filter(item => item.section === "workStyle").map(item => <section key={item.id}><h2>{item.title}</h2><p>{item.body}</p></section>)}
         <section><h2>이력서</h2>{about.resume ? <a href={about.resume} target="_blank" rel="noreferrer">이력서 보기 ↗</a> : <p className="orb-pending">등록 예정</p>}</section>
       </div>}
     </div>

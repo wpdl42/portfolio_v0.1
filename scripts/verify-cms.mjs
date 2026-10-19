@@ -10,6 +10,7 @@ import { MongoClient } from 'mongodb'
 import { toFormValues } from '../lib/cms/schema.ts'
 import { openTestBrowser, pause } from './helpers/browser.mjs'
 import { checkSoftDeletion } from './check-soft-deletion.mjs'
+import { checkEditorialRollback } from './check-editorial-rollback.mjs'
 
 nextEnv.loadEnvConfig(process.cwd())
 if(process.argv.includes('--capture') && !process.env.PORTFOLIO_CAPTURE_DIR) process.env.PORTFOLIO_CAPTURE_DIR=path.join(process.cwd(),'.next','cms-verification')
@@ -127,11 +128,24 @@ async function checkBrowser({project}) {
   for (const [kind,[field,value]] of Object.entries(fields)) {
     console.log(`Browser editor: ${kind}`)
     await goto(`${base}/admin/${kind}`); await wait('!!document.querySelector(".cms-admin")')
+    if(kind==='contact'||kind==='about') {
+      assert.equal(await evaluate('!!document.querySelector(".cms-subnav, .cms-delete-open, .cms-add")'),false)
+      const ids=kind==='contact'?['heading','intro','email','github','githubLabel','blog','blogLabel','links']:['name','bio','interests','workStyle','resume']
+      for(const id of ids) assert.ok(await evaluate(`!!document.getElementById(${JSON.stringify('cms-'+id)})`))
+    }
     await selectPublished(kind)
     await fill(`#cms-${field}`,value); await click('button[type=submit]')
     await wait('document.querySelector(".cms-save-bar [role=status]").textContent.includes("MongoDB에 저장")')
     await goto(`${base}/admin/${kind}`); await wait('!!document.querySelector(".cms-admin")'); await selectPublished(kind); await wait(`document.getElementById(${JSON.stringify('cms-'+field)})?.value===${JSON.stringify(value)}`)
   }
+  await goto(`${base}/admin/contact-links`);await wait('location.pathname==="/admin/contact" && !!document.querySelector("#cms-github")')
+  await fill('#cms-email','cms-editorial@example.com');await fill('#cms-github','https://example.com/edited-github');await fill('#cms-githubLabel','Edited GitHub');await fill('#cms-blog','https://example.com/edited-blog');await fill('#cms-blogLabel','Edited Blog');await fill('#cms-links','More | https://example.com/more');await click('button[type=submit]')
+  await wait('document.querySelector(".cms-save-bar [role=status]").textContent.includes("MongoDB에 저장")')
+  await goto(`${base}/admin/contact`);assert.equal(await evaluate('document.querySelector("#cms-email").value'),'cms-editorial@example.com')
+  const savedContact=(await list('contact'))[0].data
+  assert.equal(savedContact.github,'https://example.com/edited-github');assert.equal(savedContact.blogLabel,'Edited Blog');assert.equal(savedContact.links[0].label,'More')
+  await goto(`${base}/?category=contact&view=partial`);await pause(800);assert.equal(await evaluate('document.querySelector(".orb-contact-type nav a").getAttribute("href")'),'https://example.com/edited-github')
+  await goto(`${base}/admin/about-sections`);await wait('location.pathname==="/admin/about" && !!document.querySelector("#cms-bio")')
   // Cancel must not write. A stale version must keep the text and offer reload.
   await goto(`${base}/admin/about`); const before=await db.collection('portfolio_content').findOne({_id:'about:main'})
   await fill('#cms-bio','Unsaved cancel text')
@@ -199,24 +213,29 @@ try {
   await mongo.connect()
   assert.equal((await db.listCollections().toArray()).length,0,'Verification DB must start empty')
   const first=await runChild(['scripts/migrate-content.mjs']), second=await runChild(['scripts/migrate-content.mjs'])
-  assert.equal(first.inserted,36); assert.equal(second.inserted,0); assert.equal(second.missingFieldsAdded,0)
-  console.log('PASS migration: real MongoDB, 36 initial records including contact links, idempotent second execution')
+  assert.equal(first.inserted,34); assert.equal(second.inserted,0); assert.equal(second.missingFieldsAdded,0)
+  console.log('PASS migration: real MongoDB, 34 initial records, idempotent second execution')
+  await checkEditorialRollback(db)
   server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{env,windowsHide:true,stdio:['ignore','pipe','ignore']})
   let childReady=false, ready=false
   server.stdout.on('data',chunk=>{if(String(chunk).includes('Ready')) childReady=true})
   // Never send test mutations to a pre-existing server occupying this port.
   for(let i=0;i<100;i++) { if(server.exitCode!==null) break; try { if(childReady && (await fetch(`${base}/api/admin/session`)).ok) {ready=true;break} } catch {} await pause(200) }
   assert.ok(ready,'Production verification server did not start')
-  if(process.argv.includes('--deletion-only')) await login()
+  if(process.argv.includes('--deletion-only') || process.argv.includes('--guard-only')) await login()
   else await checkBrowser(await checkApi())
-  await checkSoftDeletion({base,api,list,save,db,testCode,runChild})
+  const contactBeforeStale=(await list('contact'))[0]
+  assert.equal((await save('contact',contactBeforeStale,{heading:contactBeforeStale.data.heading,intro:'Stale partial form'})).status,409)
+  assert.equal((await list('contact'))[0].version,contactBeforeStale.version)
+  console.log('PASS stale Contact form is rejected without changing saved values')
+  if(!process.argv.includes('--guard-only')) await checkSoftDeletion({base,api,list,save,db,testCode,runChild})
   await login(); await db.collection('admin_sessions').updateMany({},{$set:{expiresAt:new Date(Date.now()-1000)}})
   assert.equal((await api('/api/admin/content/projects')).status,401,'Expired session must be rejected by server')
   await login(); assert.equal((await api('/api/admin/session','DELETE')).status,200); assert.equal((await api('/api/admin/content/projects')).status,401)
   await db.collection('admin_attempts').deleteMany({})
   for(let i=0;i<10;i++) assert.equal((await api('/api/admin/session','POST',{code:'invalid-test-code'},false)).status,401)
   const limited=await api('/api/admin/session','POST',{code:testCode},false); assert.equal(limited.status,429); assert.ok(limited.response.headers.has('Retry-After'))
-  console.log('PASS session expiry, logout revocation, persistent rate limiting; all CMS checks complete')
+  console.log('PASS session expiry, logout revocation, persistent rate limiting; selected CMS checks complete')
 } finally {
   if(browser) await browser.close()
   if(server) { server.kill(); await pause(500) }

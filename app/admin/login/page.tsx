@@ -4,7 +4,7 @@ import { adminConfigured, readAdminSession } from "@/lib/admin/session.server"
 export const metadata = { title: "관리자 로그인", robots: { index: false, follow: false } }
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ returnTo?: string }> }) {
   const returnTo = (await searchParams).returnTo
-  const target = returnTo && /^\/admin\/(?:projects|skills|journey|notes|about|contact|categories|about-sections|contact-links|trash)$/.test(returnTo) ? returnTo : "/admin/projects"
+  const target = returnTo && /^\/admin\/(?:projects|skills|journey|notes|about|contact|categories|trash)$/.test(returnTo) ? returnTo : "/admin/projects"
   if (await readAdminSession()) redirect(target)
   return <AdminLogin configured={adminConfigured()} returnTo={target} />
 }
