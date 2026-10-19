@@ -147,7 +147,7 @@ export function CategoryContent({
               <div>
                 <h2>{item.text}</h2>
                 <p>
-                  {item.year === "NEXT" ? "앞으로의 학습 방향" : "교육 · 활동"}
+                  {item.year === "NEXT" ? "앞으로의 학습 방향" : "교육 · 활동 "}
                 </p>
               </div>
             </li>
