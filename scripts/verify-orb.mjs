@@ -1158,11 +1158,12 @@ async function checkCategoryModes() {
 }
 
 async function checkExchangeProject() {
+  const expectedProjectCount = JSON.parse(await fs.readFile(new URL('../data/projects.json', import.meta.url), 'utf8')).length + 1
   await viewport(1440,900)
   await navigate('?category=projects&view=expanded')
   await pause(800)
-  assert.equal(await evaluate('document.querySelectorAll(".project-card-wrap[data-copy=\\"1\\"]").length'),4)
-  const record=await evaluate(`(()=>{const card=[...document.querySelectorAll('.project-card[data-copy="1"]')].find(n=>n.querySelector('h3').textContent==='거래소');const visit=card.parentElement.querySelector('.project-visit-link');return {href:card.getAttribute('href'),text:card.textContent,tags:[...card.querySelectorAll('.project-card-tags span')].map(n=>n.textContent),art:card.querySelector('.project-artwork').dataset.artwork,visit:visit.href,target:visit.target}})()`)
+  assert.equal(await evaluate('document.querySelectorAll(".project-card-wrap[data-copy=\\"1\\"]").length'),expectedProjectCount)
+  const record=await evaluate(`(()=>{const card=[...document.querySelectorAll('.project-card[data-copy="1"]')].find(n=>n.querySelector('h3').textContent==='거래소');const visit=card.parentElement.querySelector('.project-visit-link');return {href:card.getAttribute('href'),text:card.textContent,period:card.querySelector('.project-card-meta span:last-child').textContent,tags:[...card.querySelectorAll('.project-card-tags span')].map(n=>n.textContent),art:card.querySelector('.project-artwork').dataset.artwork,visit:visit.href,target:visit.target}})()`)
   assert.equal(record.href,'/projects/4')
   assert.deepEqual(record.tags,['React','Next.js','MongoDB'])
   assert.equal(record.art,'screenshot')
@@ -1180,11 +1181,17 @@ async function checkExchangeProject() {
   await waitFor('location.pathname==="/projects/4" && !!document.querySelector(".orb-detail-tabs")',15000)
   const text=await evaluate('document.querySelector(".orb-detail-shell").textContent')
   assert.match(text,/거래소/)
-  assert.match(text,/9월~12월 · 연도 미확인/)
+  assert.ok(text.includes(record.period),'Detail and card must show the same current project period')
   assert.match(text,/백엔드 개발/)
-  assert.match(text,/금융자산 거래소나 모의 투자 서비스가 아닙니다/)
+  assert.match(text,/중고/)
   for(const index of [1,2,3]) await click(`#tab-${index}`)
   assert.match(await evaluate('document.querySelector(".orb-detail-tabpanel").textContent'),/MongoDB.*처음/)
+  await evaluate('document.querySelector("#tab-3").focus();true')
+  await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39})
+  assert.equal(await evaluate('document.activeElement.id'),'tab-0')
+  assert.equal(await evaluate('document.querySelector(".orb-detail-tabpanel").getAttribute("aria-labelledby")'),'tab-0')
+  await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowLeft',code:'ArrowLeft',windowsVirtualKeyCode:37})
+  assert.equal(await evaluate('document.activeElement.id'),'tab-3')
   assert.equal(await evaluate('document.querySelector(".orb-detail-external").target'),'_blank')
   await pause(300)
   await capture('exchange-project-detail')
@@ -1202,7 +1209,7 @@ async function checkExchangeProject() {
   await pause(700)
   await evaluate('Array.from(document.querySelectorAll(".orb-sheet-filters button")).find(n=>n.textContent.startsWith("All (")).click();true')
   await pause(150)
-  assert.equal(await evaluate('document.querySelectorAll(".project-card-wrap[data-copy=\\"1\\"]").length'),4)
+  assert.equal(await evaluate('document.querySelectorAll(".project-card-wrap[data-copy=\\"1\\"]").length'),expectedProjectCount)
   assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth'))
   await capture('exchange-project-mobile')
   await click('.orb-sheet-toggle')
@@ -1212,7 +1219,43 @@ async function checkExchangeProject() {
   await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39})
   await pause(550)
   assert.notEqual(await evaluate('document.querySelector(".featured-track").style.transform'),position)
-  console.log('PASS exchange: four ordered cards, real screenshot, three tech filters/tags, separate external link, internal detail, supplied role/period/experience, search aliases, mobile and carousel keyboard')
+  console.log('PASS exchange: ordered catalog cards, real screenshot, three tech filters/tags, separate external link, internal detail, supplied role/period/experience, search aliases, mobile and carousel keyboard')
+}
+
+async function checkRetainedRoutes() {
+  for (const width of [1440, 390]) {
+    await viewport(width, 900)
+    for (const [route, selector, columns] of [
+      ['/assignments', '.assignment-grid', width > 640 ? 3 : 1],
+      ['/progress', '.skill-grid', width > 640 ? 3 : 1],
+      ['/missing-page', '.not-found', null],
+    ]) {
+      await send('Page.navigate', { url: new URL(route, baseURL).href })
+      await waitFor(`location.pathname === ${JSON.stringify(route)} && document.readyState === 'complete' && !!document.querySelector(${JSON.stringify(selector)})`)
+      const layout = await evaluate(`(() => {
+        const element = document.querySelector(${JSON.stringify(selector)});
+        const style = getComputedStyle(element);
+        return { display: style.display, columns: style.gridTemplateColumns.split(' ').length, overflow: document.documentElement.scrollWidth > innerWidth };
+      })()`)
+      assert.equal(layout.overflow, false, `${route} must fit at ${width}px`)
+      if (columns) {
+        assert.equal(layout.display, 'grid')
+        assert.equal(layout.columns, columns)
+        assert.ok(await evaluate('!!document.querySelector(".page-intro h1")'))
+      }
+      if (route === '/progress') {
+        const count = await evaluate('document.querySelectorAll(".skill-card").length')
+        await click('.filter-list button:last-child')
+        await waitFor(`document.querySelectorAll('.skill-card').length < ${count}`)
+        assert.equal(await evaluate('getComputedStyle(document.querySelector(".skill-track")).height'), '7px')
+      }
+      if (route === '/missing-page') {
+        assert.equal(layout.display, 'flex')
+        assert.equal(await evaluate('document.querySelector(".button-primary").getAttribute("href")'), '/')
+      }
+    }
+  }
+  console.log('PASS retained routes: assignments, progress filters, 404 and shared responsive styles at desktop/mobile widths')
 }
 
 try {
@@ -1233,6 +1276,7 @@ try {
   if (stage >= 14 && (!only || stage === 14)) await checkSatelliteSearchSpace()
   if (stage === 15) await checkCategoryModes()
   if (stage === 16) await checkExchangeProject()
+  if (stage === 17) await checkRetainedRoutes()
   assert.deepEqual(browserErrors, [])
   console.log(`PASS stage ${stage}`)
 } finally {

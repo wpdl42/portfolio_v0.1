@@ -1,68 +1,11 @@
-import reownProject from "@/data/reown-project.json"
-import type { ProjectDetail } from "@/lib/project-details"
-
-export type Project = {
-  id: number
-  title: string
-  category: string
-  description: string
-  role: string
-  period: string
-  status?: "진행 중" | "완료" | "예정"
-  accent: string
-  link?: string
-  slug?: string
-  canonicalUrl?: string
-  visibility?: "public" | "private"
-  order?: number
-  thumbnail?: string
-  keywords?: string[]
-  detail?: ProjectDetail
-}
+export type { Project } from "@/lib/projects/types"
+export { projects } from "@/lib/projects/catalog"
 
 export type Skill = {
   name: string
   category: "frontend" | "backend" | "tools"
   level: number
 }
-
-export const projects: Project[] = [
-  {
-    id: 1,
-    title: "NeoCore Team Project",
-    category: "Web · Team",
-    description:
-      "웹 프로그래밍 수업에서 진행한 AI 주제의 반응형 웹사이트 팀 프로젝트입니다.",
-    role: "프론트엔드 개발 및 UI 디자인",
-    period: "2026.04 — 2026.06",
-    status: "완료",
-    accent: "blue",
-    link: "https://neo-core-ai.vercel.app/",
-  },
-  {
-    id: 2,
-    title: "Java 학사관리 시스템",
-    category: "Java · Team",
-    description:
-      "학생과 수업 정보를 관리하는 교내 학사관리 시스템 모방 프로젝트입니다.",
-    role: "백엔드 로직 설계",
-    period: "2026.05",
-    status: "완료",
-    accent: "orange",
-  },
-  {
-    id: 3,
-    title: "Personal Portfolio",
-    category: "Next.js · Personal",
-    description:
-      "수업 결과물과 학습 과정을 한곳에 기록하기 위해 제작하는 개인 포트폴리오입니다.",
-    role: "기획, 디자인, 프론트엔드",
-    period: "2026.10 —",
-    status: "진행 중",
-    accent: "green",
-  },
-  reownProject as Project,
-]
 
 export const assignments = [
   {

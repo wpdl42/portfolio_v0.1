@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" fill="none">
+  <defs>
+    <linearGradient id="background" x2="1200" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e0e6fc"/><stop offset=".55" stop-color="#f5f1fa"/><stop offset="1" stop-color="#c9d8ef"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="390" y1="140" x2="860" y2="550" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#d4dff5" stop-opacity=".7"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#background)" d="M0 0h1200v640H0z"/>
+  <g stroke="#a6b8d8" stroke-opacity=".45" stroke-width="1.5">
+    <ellipse cx="625" cy="340" rx="390" ry="190" transform="rotate(-18 625 340)"/>
+    <ellipse cx="625" cy="340" rx="300" ry="250" transform="rotate(23 625 340)"/>
+  </g>
+  <g transform="rotate(-8 620 330)">
+    <rect x="410" y="175" width="440" height="350" rx="22" fill="#a6b9e4" fill-opacity=".24" stroke="#fff"/>
+    <rect x="380" y="145" width="440" height="350" rx="22" fill="url(#paper)" stroke="#fff" stroke-width="2"/>
+    <path d="m545 270-65 50 65 50m110-100 65 50-65 50m-35-130-40 160" stroke="#748cb9" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M480 430h165m25 0h50" stroke="#9baed2" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g fill="#6c7d9c" font-family="Arial,sans-serif">
+    <text x="87" y="108" font-size="16" letter-spacing="5">CLASSROOM PRACTICE</text>
+    <text x="87" y="553" font-size="13" letter-spacing="3">LEARN · BUILD · RECORD</text>
+  </g>
+</svg>

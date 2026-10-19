@@ -1,0 +1,102 @@
+[
+  {
+    "project": {
+      "id": 1,
+      "title": "NeoCore Team Project",
+      "category": "Web · Team",
+      "description": "웹 프로그래밍 수업에서 진행한 AI 주제의 반응형 웹사이트 팀 프로젝트입니다.",
+      "role": "프론트엔드 개발 및 UI 디자인",
+      "period": "2026.04 — 2026.06",
+      "status": "완료",
+      "accent": "blue",
+      "link": "https://neo-core-ai.vercel.app/"
+    },
+    "detail": {
+      "tags": [
+        "Web",
+        "AI",
+        "Responsive UI",
+        "Team"
+      ],
+      "process": "웹 프로그래밍 수업의 팀 프로젝트로 AI 주제의 반응형 사이트를 제작했습니다. 프론트엔드 화면 구성과 UI 디자인을 담당했습니다.",
+      "learnings": [
+        "팀 프로젝트에서 화면 구성과 역할을 맞추는 과정",
+        "화면 크기에 따라 달라지는 레이아웃 설계"
+      ]
+    },
+    "illustration": "/images/project-neocore.svg"
+  },
+  {
+    "project": {
+      "id": 2,
+      "title": "Java 학사관리 시스템",
+      "category": "Java · Team",
+      "description": "학생과 수업 정보를 관리하는 교내 학사관리 시스템 모방 프로젝트입니다.",
+      "role": "백엔드 로직 설계",
+      "period": "2026.05",
+      "status": "완료",
+      "accent": "orange"
+    },
+    "detail": {
+      "tags": [
+        "Java",
+        "Management System",
+        "Team"
+      ],
+      "process": "학생과 수업 정보를 관리하는 학사관리 시스템을 모방해 만들었습니다. 백엔드 로직 설계에 참여했습니다.",
+      "learnings": [
+        "정보를 구조화하고 관리하는 로직",
+        "팀 작업에서 기능을 나누고 연결하는 과정"
+      ]
+    },
+    "illustration": "/images/project-campus.svg"
+  },
+  {
+    "project": {
+      "id": 3,
+      "title": "Personal Portfolio",
+      "category": "Next.js · Personal",
+      "description": "수업 결과물과 학습 과정을 한곳에 기록하기 위해 제작하는 개인 포트폴리오입니다.",
+      "role": "기획, 디자인, 프론트엔드",
+      "period": "2026.10 —",
+      "status": "진행 중",
+      "accent": "green"
+    },
+    "detail": {
+      "tags": [
+        "Next.js",
+        "Web",
+        "Personal"
+      ],
+      "process": "수업 결과물과 학습 과정을 한곳에 기록하기 위해 기획과 디자인, 프론트엔드 구현을 진행하고 있습니다.",
+      "learnings": [
+        "정보를 탐색하기 쉬운 화면 구조",
+        "반응형 UI와 인터랙션을 직접 조정하는 과정"
+      ]
+    },
+    "illustration": "/images/project-portfolio.svg"
+  },
+  {
+    "project": {
+      "id": 5,
+      "slug": "classroom-web-practice",
+      "title": "수업 실습 웹 페이지",
+      "category": "Web · 수업 실습",
+      "description": "수업 시간에 실습하며 제작하고 있는 웹 페이지입니다.",
+      "role": "작성 예정",
+      "period": "작성 예정",
+      "status": "진행 중",
+      "accent": "blue",
+      "keywords": ["수업", "실습", "웹 페이지", "classroom", "practice"]
+    },
+    "detail": {
+      "tags": ["Web", "수업 실습"],
+      "overview": "수업 시간에 실습하며 제작하고 있는 웹 페이지입니다. 자세한 소개는 작성 예정입니다.",
+      "features": ["주요 실습 내용 작성 예정"],
+      "process": "실습 과정 작성 예정",
+      "technologyNote": "실제로 사용한 기술 작성 예정",
+      "learnings": ["실습하며 배운 점 작성 예정"]
+    },
+    "illustration": "/images/project-classroom.svg"
+  }
+]

@@ -22,7 +22,7 @@ import {
 } from "@/lib/portfolio"
 import { categories, matchesCategory, parseCategory, type CategoryId } from "@/lib/orb-content"
 import { resolveOrbLighting } from "@/lib/orb-lighting"
-import { getProjectDetail } from "@/lib/project-details"
+import { matchesProjectFilter, projectFilters } from "@/lib/projects/filters"
 
 type SheetState = "closed" | "partial" | "expanded"
 
@@ -299,13 +299,10 @@ export function OrbExperience({
 
   const selected = categories.find((category) => category.id === activeCategory)
   const displayedView = isClosing ? closingView : sheetState
-  const filteredProjects = useMemo(() => projects.filter(
-    (project) =>
-      filter === "All" ||
-      (filter === "Web" && /Web|Next/i.test(project.category)) ||
-      (filter === "Java" && /Java/i.test(project.category)) ||
-      (["React", "Next.js", "MongoDB"].includes(filter) && getProjectDetail(project).tags.includes(filter)),
-  ), [projects, filter])
+  const filteredProjects = useMemo(
+    () => projects.filter(project => matchesProjectFilter(project, filter)),
+    [projects, filter],
+  )
   const visibleProjects =
     useMemo(() => sort === "Oldest" ? [...filteredProjects].reverse() : filteredProjects, [sort, filteredProjects])
 
@@ -500,7 +497,7 @@ export function OrbExperience({
                 aria-label="프로젝트 필터와 정렬"
               >
                 <div>
-                  {["All", "Web", "Java", "React", "Next.js", "MongoDB", "Experiments"].map((value) => (
+                  {projectFilters.map((value) => (
                     <button
                       type="button"
                       key={value}
