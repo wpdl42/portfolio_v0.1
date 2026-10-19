@@ -74,6 +74,7 @@
       "period": "2026.09 - 진행 중",
       "status": "진행 중",
       "accent": "blue",
+      "link": "https://myapp1-sand.vercel.app/",
       "keywords": ["수업", "실습", "웹 페이지", "classroom", "practice"]
     },
     "detail": {

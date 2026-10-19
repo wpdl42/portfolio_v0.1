@@ -16,6 +16,7 @@ import { CategoryContent } from "@/components/CategoryContent"
 import { OrbEditorialPanel } from "@/components/OrbEditorialPanel"
 import { OrbSearch } from "@/components/OrbSearch"
 import { FluidOrb } from "@/components/FluidOrb"
+import { ProjectEditor } from "@/components/ProjectEditor"
 import { useSatelliteMotion } from "@/hooks/useSatelliteMotion"
 import {
   type Project,
@@ -66,6 +67,7 @@ export function OrbExperience({
   const [targetProjectId, setTargetProjectId] = useState<number | null>(null)
   const [filter, setFilter] = useState(initialCategory === "experiments" ? "Experiments" : "All")
   const [sort, setSort] = useState("Latest")
+  const [projectEditorOpen, setProjectEditorOpen] = useState(false)
   const sheetRef = useRef<HTMLElement>(null)
   const sheetScrollRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{
@@ -342,8 +344,8 @@ export function OrbExperience({
       <div
         className="orb-scene"
         ref={sceneRef}
-        inert={sheetState === "expanded" || editorial}
-        aria-hidden={sheetState === "expanded" || editorial}
+        inert={sheetState === "expanded" || editorial || projectEditorOpen}
+        aria-hidden={sheetState === "expanded" || editorial || projectEditorOpen}
       >
         <div className="orb-ambient" aria-hidden="true" />
         <div className="orb-orbit orb-orbit-one" aria-hidden="true">
@@ -365,7 +367,7 @@ export function OrbExperience({
           <i />
         </div>
         <div className="orb-sphere" aria-hidden="true">
-          <FluidOrb active={editorial || sheetState !== "expanded"} interactive={!editorial} lighting={lighting} />
+          <FluidOrb active={!projectEditorOpen && (editorial || sheetState !== "expanded")} interactive={!editorial && !projectEditorOpen} lighting={lighting} />
         </div>
         {categories.map((category) => (
           <button
@@ -486,6 +488,7 @@ export function OrbExperience({
                       ? `${projects.length} Projects`
                       : activeCategory === "notes" ? "Notes archive" : ""}
                   </span>}
+                  {activeCategory === "projects" && <button className="project-editor-open" type="button" onClick={() => setProjectEditorOpen(true)}>프로젝트 편집</button>}
                 </div>
                 <p>{selected?.intro}</p>
               </div>
@@ -560,6 +563,7 @@ export function OrbExperience({
           </button>
         </div>
       </section>
+      {projectEditorOpen && <ProjectEditor projects={projects} onClose={() => setProjectEditorOpen(false)} />}
       {editorial && <OrbEditorialPanel category={activeCategory as "about" | "contact"} open={sheetState !== "closed"} onClose={() => closeSheet()} />}
     </div>
   )
