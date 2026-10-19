@@ -12,12 +12,7 @@
       "link": "https://neo-core-ai.vercel.app/"
     },
     "detail": {
-      "tags": [
-        "Web",
-        "AI",
-        "Responsive UI",
-        "Team"
-      ],
+      "tags": ["Web", "AI", "Responsive UI", "Team"],
       "process": "웹 프로그래밍 수업의 팀 프로젝트로 AI 주제의 반응형 사이트를 제작했습니다. 프론트엔드 화면 구성과 UI 디자인을 담당했습니다.",
       "learnings": [
         "팀 프로젝트에서 화면 구성과 역할을 맞추는 과정",
@@ -38,11 +33,7 @@
       "accent": "orange"
     },
     "detail": {
-      "tags": [
-        "Java",
-        "Management System",
-        "Team"
-      ],
+      "tags": ["Java", "Management System", "Team"],
       "process": "학생과 수업 정보를 관리하는 학사관리 시스템을 모방해 만들었습니다. 백엔드 로직 설계에 참여했습니다.",
       "learnings": [
         "정보를 구조화하고 관리하는 로직",
@@ -63,11 +54,7 @@
       "accent": "green"
     },
     "detail": {
-      "tags": [
-        "Next.js",
-        "Web",
-        "Personal"
-      ],
+      "tags": ["Next.js", "Web", "Personal"],
       "process": "수업 결과물과 학습 과정을 한곳에 기록하기 위해 기획과 디자인, 프론트엔드 구현을 진행하고 있습니다.",
       "learnings": [
         "정보를 탐색하기 쉬운 화면 구조",
@@ -83,8 +70,8 @@
       "title": "수업 실습 웹 페이지",
       "category": "Web · 수업 실습",
       "description": "수업 시간에 실습하며 제작하고 있는 웹 페이지입니다.",
-      "role": "작성 예정",
-      "period": "작성 예정",
+      "role": "프론트, 백엔드, 디자인",
+      "period": "2026.09 - 진행 중",
       "status": "진행 중",
       "accent": "blue",
       "keywords": ["수업", "실습", "웹 페이지", "classroom", "practice"]
