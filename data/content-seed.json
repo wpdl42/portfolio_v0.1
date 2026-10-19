@@ -1,0 +1,432 @@
+{
+  "entries": [
+    {
+      "key": "categories:projects",
+      "kind": "categories",
+      "data": {
+        "id": "projects",
+        "label": "Projects",
+        "color": "#9a4dff",
+        "keywords": [
+          "project",
+          "projects",
+          "portfolio",
+          "work",
+          "프로젝트",
+          "작업",
+          "neocore",
+          "java"
+        ],
+        "intro": "수업과 개인 학습에서 직접 만든 결과물을 모았습니다.",
+        "summary": "아이디어를 화면과 동작으로 옮긴 작업들입니다.",
+        "order": 0
+      }
+    },
+    {
+      "key": "categories:skills",
+      "kind": "categories",
+      "data": {
+        "id": "skills",
+        "label": "Skills",
+        "color": "#5a82ea",
+        "keywords": [
+          "skills",
+          "skill",
+          "기술",
+          "역량",
+          "framework",
+          "tool",
+          "도구"
+        ],
+        "intro": "언어와 프레임워크, 도구를 실제 작업과 연결해 살펴봅니다.",
+        "summary": "퍼센트보다 어떻게 활용했는지를 기록합니다.",
+        "order": 2
+      }
+    },
+    {
+      "key": "categories:journey",
+      "kind": "categories",
+      "data": {
+        "id": "journey",
+        "label": "Journey",
+        "color": "#e4ad54",
+        "keywords": [
+          "journey",
+          "learning",
+          "learn",
+          "study",
+          "학습",
+          "공부",
+          "교육",
+          "활동",
+          "성장"
+        ],
+        "intro": "교육과 활동, 새로운 기술을 익히는 과정을 기록합니다.",
+        "summary": "웹 개발과 보안을 함께 공부하고 있습니다.",
+        "order": 1
+      }
+    },
+    {
+      "key": "categories:notes",
+      "kind": "categories",
+      "data": {
+        "id": "notes",
+        "label": "Notes",
+        "color": "#7385a1",
+        "keywords": [
+          "note",
+          "notes",
+          "blog",
+          "기록",
+          "노트",
+          "블로그"
+        ],
+        "intro": "개발 과정에서 마주친 생각과 배움을 정리합니다.",
+        "summary": "배운 것을 잊지 않도록 남겨 둡니다.",
+        "order": 3
+      }
+    },
+    {
+      "key": "categories:about",
+      "kind": "categories",
+      "data": {
+        "id": "about",
+        "label": "About",
+        "color": "#f28c58",
+        "keywords": [
+          "about",
+          "me",
+          "profile",
+          "소개",
+          "장주민",
+          "jumin",
+          "site",
+          "이력"
+        ],
+        "intro": "안녕하세요. 만들고 배우며 성장하는 장주민입니다.",
+        "summary": "웹 개발과 보안을 함께 탐색하고 있습니다.",
+        "order": 4
+      }
+    },
+    {
+      "key": "categories:contact",
+      "kind": "categories",
+      "data": {
+        "id": "contact",
+        "label": "Contact",
+        "color": "#69b78a",
+        "keywords": [
+          "contact",
+          "github",
+          "email",
+          "연락",
+          "문의",
+          "깃허브"
+        ],
+        "intro": "함께 이야기하고 싶은 주제가 있다면 연락해 주세요.",
+        "summary": "프로젝트와 학습에 관한 대화를 기다립니다.",
+        "order": 5
+      }
+    },
+    {
+      "key": "skills:html5",
+      "kind": "skills",
+      "data": {
+        "name": "HTML5",
+        "group": "언어",
+        "description": "HTML · CSS 데모와 다중 페이지 과제에서 화면 구조를 구성했습니다.",
+        "projectIds": [
+          1
+        ],
+        "order": 0,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "skills:css3",
+      "kind": "skills",
+      "data": {
+        "name": "CSS3",
+        "group": "언어",
+        "description": "HTML · CSS 데모와 반응형 웹사이트의 UI 작업에 활용했습니다.",
+        "projectIds": [
+          1
+        ],
+        "order": 1,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "skills:javascript",
+      "kind": "skills",
+      "data": {
+        "name": "JavaScript",
+        "group": "언어",
+        "description": "웹 프로젝트와 포트폴리오의 사용자 인터랙션을 구현하는 데 활용합니다.",
+        "projectIds": [
+          3
+        ],
+        "order": 2,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "skills:next-js",
+      "kind": "skills",
+      "data": {
+        "name": "Next.js",
+        "group": "프레임워크",
+        "description": "이 포트폴리오의 페이지와 동적 프로젝트 상세 경로에 활용합니다.",
+        "projectIds": [
+          3
+        ],
+        "order": 3,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "skills:java",
+      "kind": "skills",
+      "data": {
+        "name": "Java",
+        "group": "언어",
+        "description": "학생·수업 정보를 관리하는 학사관리 시스템의 로직을 설계했습니다.",
+        "projectIds": [
+          2
+        ],
+        "order": 4,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "skills:python",
+      "kind": "skills",
+      "data": {
+        "name": "Python",
+        "group": "언어",
+        "description": "구체적인 활용 경험은 정리 중입니다.",
+        "projectIds": [],
+        "order": 5,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "skills:linux",
+      "kind": "skills",
+      "data": {
+        "name": "Linux",
+        "group": "도구 · 환경 · 관심 분야",
+        "description": "구체적인 활용 경험은 정리 중입니다.",
+        "projectIds": [],
+        "order": 6,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "skills:security",
+      "kind": "skills",
+      "data": {
+        "name": "Security",
+        "group": "도구 · 환경 · 관심 분야",
+        "description": "구체적인 활용 경험은 정리 중입니다.",
+        "projectIds": [],
+        "order": 7,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "skills:git",
+      "kind": "skills",
+      "data": {
+        "name": "Git",
+        "group": "도구 · 환경 · 관심 분야",
+        "description": "GitHub를 활용한 팀 프로젝트 협업을 준비하고 작업을 관리합니다.",
+        "projectIds": [
+          1
+        ],
+        "order": 8,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "journey:2023",
+      "kind": "journey",
+      "data": {
+        "title": "중부대학교 정보보호학과 입학",
+        "activityType": "교육 · 활동",
+        "period": "2023",
+        "description": "교육 · 활동",
+        "startDate": "",
+        "endDate": "",
+        "links": [],
+        "order": 0,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "journey:2024",
+      "kind": "journey",
+      "data": {
+        "title": "자격증 취득",
+        "activityType": "교육 · 활동",
+        "period": "2024",
+        "description": "교육 · 활동",
+        "startDate": "",
+        "endDate": "",
+        "links": [],
+        "order": 1,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "journey:2026",
+      "kind": "journey",
+      "data": {
+        "title": "복학 및 웹 개발 학습 진행",
+        "activityType": "교육 · 활동",
+        "period": "2026",
+        "description": "교육 · 활동",
+        "startDate": "",
+        "endDate": "",
+        "links": [],
+        "order": 2,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "journey:NEXT",
+      "kind": "journey",
+      "data": {
+        "title": "리눅스와 보안 역량 확장",
+        "activityType": "학습 방향",
+        "period": "NEXT",
+        "description": "앞으로의 학습 방향",
+        "startDate": "",
+        "endDate": "",
+        "links": [],
+        "order": 3,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "journey:archive",
+      "kind": "journey",
+      "data": {
+        "title": "이어 가는 학습",
+        "activityType": "학습 소개",
+        "period": "",
+        "description": "텍스트 입력 공간. 아직 작성 중입니다.",
+        "startDate": "",
+        "endDate": "",
+        "links": [],
+        "order": 100,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "notes:portfolio-interactions",
+      "kind": "notes",
+      "data": {
+        "title": "포트폴리오의 검색과 카테고리 탐색",
+        "slug": "portfolio-interactions",
+        "description": "현재 포트폴리오에 구현된 탐색 방식과 인터랙션을 정리합니다.",
+        "tags": [
+          "Next.js",
+          "UI",
+          "접근성"
+        ],
+        "body": "개인 포트폴리오는 수업 결과물과 학습 과정을 한곳에 기록하기 위한 프로젝트입니다.\n\n중앙 Fluid Orb와 카테고리, 검색창을 통해 콘텐츠에 접근합니다. 검색은 제목, 기술 태그, 설명 순서로 결과를 정렬하며 방향키와 Enter로 탐색할 수 있습니다.\n\n카테고리와 화면 상태는 URL로 연결하고, 모션 감소 설정과 키보드 포커스를 지원합니다.",
+        "date": "",
+        "order": 0,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "notes:neocore-overview",
+      "kind": "notes",
+      "data": {
+        "title": "NeoCore 팀 프로젝트 개요",
+        "slug": "neocore-overview",
+        "description": "기존 프로젝트 소개를 바탕으로 작업 범위와 결과물을 정리합니다.",
+        "tags": [
+          "Web",
+          "Team"
+        ],
+        "body": "NeoCore는 웹 프로그래밍 수업에서 진행한 AI 주제의 반응형 웹사이트 팀 프로젝트입니다.\n\n프로젝트에 기록된 담당 역할은 프론트엔드 개발 및 UI 디자인이며, 기간은 2026년 4월부터 6월까지입니다.\n\n실제 결과물은 Projects의 NeoCore 상세 화면에서 확인할 수 있습니다.",
+        "date": "",
+        "order": 1,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "notes:java-system-overview",
+      "kind": "notes",
+      "data": {
+        "title": "Java 학사관리 시스템 정리",
+        "slug": "java-system-overview",
+        "description": "학생과 수업 정보를 다루는 수업 프로젝트의 개요입니다.",
+        "tags": [
+          "Java",
+          "Team"
+        ],
+        "body": "Java 학사관리 시스템은 교내 학사관리 시스템을 모방하여 학생과 수업 정보를 관리하는 프로젝트입니다.\n\n기록된 담당 역할은 백엔드 로직 설계이며, 프로젝트 기간은 2026년 5월입니다.\n\n이 글은 기존 프로젝트 정보의 정리이며, 별도 기술 블로그 글이나 미제공된 트러블슈팅 경험을 재구성한 글은 아닙니다.",
+        "date": "",
+        "order": 2,
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "about:main",
+      "kind": "about",
+      "data": {
+        "name": "장주민",
+        "homeName": "Jang Jumin",
+        "homeRole": "웹 개발 · 보안을 배우고 기록합니다.",
+        "lead": "웹 개발과 보안을 배우고 기록합니다.",
+        "bioTitle": "만들며 배우는 과정",
+        "bio": "중부대학교 정보보호학과에서 공부하며, 수업과 개인 학습의 결과물을 직접 만들고 다듬고 있습니다. 이 포트폴리오는 프로젝트와 학습 과정을 한곳에 기록하는 공간입니다.",
+        "interestsTitle": "관심 분야",
+        "interests": "웹 인터페이스와 사용자 인터랙션, 리눅스와 보안에 관심을 두고 탐색합니다.",
+        "workStyleTitle": "작업 방식",
+        "workStyle": "문제를 작게 나누어 구현하고 실제 화면에서 동작을 확인합니다. 완성된 결과뿐 아니라 문제를 찾아 고쳐 나가는 과정도 기록합니다.",
+        "resume": ""
+      }
+    },
+    {
+      "key": "contact:main",
+      "kind": "contact",
+      "data": {
+        "heading": "함께 이야기해요.",
+        "intro": "프로젝트와 배움에 관한 대화를 기다립니다.",
+        "email": "",
+        "github": "https://github.com/wpdl42",
+        "githubLabel": "GitHub",
+        "blog": "https://it-bookmark.tistory.com/",
+        "blogLabel": "Blog",
+        "links": []
+      }
+    }
+  ],
+  "experiments": [
+    {
+      "number": "01",
+      "title": "개인 블로그 개설",
+      "description": "학습한 IT 기술과 수업 내용을 기록하는 블로그를 운영합니다."
+    },
+    {
+      "number": "02",
+      "title": "HTML · CSS 데모",
+      "description": "HTML과 CSS의 기본 문법을 활용해 간단한 웹사이트를 제작했습니다."
+    },
+    {
+      "number": "03",
+      "title": "다중 페이지 제작",
+      "description": "Home, About, Contact 화면을 구성하고 페이지를 연결했습니다."
+    },
+    {
+      "number": "04",
+      "title": "팀 프로젝트 구성",
+      "description": "역할을 나누고 GitHub를 이용하는 협업 프로젝트를 준비했습니다."
+    }
+  ]
+}

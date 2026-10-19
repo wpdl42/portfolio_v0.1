@@ -40,7 +40,7 @@ export function FluidOrb({ active, lighting, interactive = true }: { active: boo
     const canvas = canvasRef.current
     if (!root || !canvas) return
     const input: OrbPointerInput = { clientX: 0, clientY: 0, updatedAt: 0, eligible: false }
-    const categoryNodes = categories.map((category) => ({ element: document.getElementById(`category-${category.id}`), color: categoryLight({ category: category.id, source: "selection" }).color }))
+    const categoryNodes = categories.map((category) => ({ id: category.id, element: document.getElementById(`category-${category.id}`) }))
     const compact = window.matchMedia("(max-width: 768px)").matches
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)")
     const renderer = createFluidRenderer(canvas, compact, (reason) => { root.dataset.fallbackReason = reason })
@@ -94,9 +94,10 @@ export function FluidOrb({ active, lighting, interactive = true }: { active: boo
           hit = intersectOrbSurface(input.clientX, input.clientY, bounds, elapsed, smoothX, smoothY, surface)
           targetLightPoint = proximitySurfacePoint(input.clientX, input.clientY, bounds, elapsed, smoothX, smoothY, surface)
           // Batch current screen positions on rendered frames, including CSS orbital transforms.
-          const positions = categoryNodes.flatMap(({ element, color }) => {
+          const positions = categoryNodes.flatMap(({ element, id }) => {
             if (!element) return []
             const button = element.getBoundingClientRect()
+            const color = categoryLight({ category: id, source: "selection", palette: lightRef.current.palette }).color
             return [{ x: button.left + button.width / 2, y: button.top + button.height / 2, color }]
           })
           targetColor = proximityColor(input.clientX, input.clientY, positions, proximity.radius)

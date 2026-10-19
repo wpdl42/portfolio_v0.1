@@ -1,5 +1,6 @@
 import { OrbExperience } from "@/components/OrbExperience"
-import { getProjects } from "@/lib/projects.server"
+import { getPortfolioContent } from "@/lib/cms/repository.server"
+import { readAdminSession } from "@/lib/admin/session.server"
 
 type HomePageProps = {
   searchParams: Promise<{ category?: string; view?: string }>
@@ -7,6 +8,6 @@ type HomePageProps = {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const { category, view } = await searchParams
-  const projects = await getProjects()
-  return <OrbExperience projects={projects} initialCategory={category} initialView={view} />
+  const [content, session] = await Promise.all([getPortfolioContent(), readAdminSession()])
+  return <OrbExperience projects={content.projects} content={content} isAdmin={!!session} initialCategory={category} initialView={view} />
 }

@@ -1,9 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { contactDetails } from "@/lib/contact"
+import Link from "next/link"
+import type { PortfolioContent } from "@/lib/cms/types"
 
-export function OrbEditorialPanel({ category, open, onClose }: { category: "about" | "contact"; open: boolean; onClose: () => void }) {
+export function OrbEditorialPanel({ category, open, onClose, content, isAdmin }: { category: "about" | "contact"; open: boolean; onClose: () => void; content: PortfolioContent; isAdmin: boolean }) {
+  const contactDetails = content.contact
+  const about = content.about
   const rootRef = useRef<HTMLDivElement>(null)
   const [copyStatus, setCopyStatus] = useState("")
   useEffect(() => {
@@ -32,18 +35,19 @@ export function OrbEditorialPanel({ category, open, onClose }: { category: "abou
   }}>
     {category === "about" ? <button className="orb-editorial-dim" aria-label="소개 패널 배경 닫기" tabIndex={-1} onClick={onClose} /> : <div className="orb-contact-backdrop" aria-hidden="true" />}
     <button className="orb-editorial-close" aria-label={`${category === "about" ? "소개" : "연락"} 닫기`} onClick={onClose}>×</button>
+    {isAdmin && <Link className="cms-edit-link cms-editorial-edit" href={`/admin/${category}`}>편집</Link>}
     <div className="orb-editorial-content">
       {category === "contact" ? <div className="orb-contact-type">
-        <p className="orb-editorial-eyebrow">CONTACT</p><h1 id="orb-editorial-title" tabIndex={-1}>함께 이야기해요.</h1>
-        <p className="orb-contact-intro">프로젝트와 배움에 관한 대화를 기다립니다.</p>
+        <p className="orb-editorial-eyebrow">{content.categories.find(item => item.id === "contact")?.label}</p><h1 id="orb-editorial-title" tabIndex={-1}>{contactDetails.heading || "연락처 등록 예정"}</h1>
+        <p className="orb-contact-intro">{contactDetails.intro}</p>
         <div className="orb-contact-email">{contactDetails.email ? <><a href={`mailto:${contactDetails.email}`}>{contactDetails.email}</a><button onClick={copyEmail}>이메일 복사</button></> : <p>이메일 <span>등록 예정</span></p>}<span role="status" aria-live="polite">{copyStatus}</span></div>
-        <nav aria-label="외부 연락 링크"><a href={contactDetails.github} target="_blank" rel="noreferrer">GitHub <span>새 탭 ↗</span></a><a href={contactDetails.blog} target="_blank" rel="noreferrer">Blog <span>새 탭 ↗</span></a></nav>
+        <nav aria-label="외부 연락 링크">{contactDetails.github && <a href={contactDetails.github} target="_blank" rel="noreferrer">{contactDetails.githubLabel || "GitHub"} <span>새 탭 ↗</span></a>}{contactDetails.blog && <a href={contactDetails.blog} target="_blank" rel="noreferrer">{contactDetails.blogLabel || "Blog"} <span>새 탭 ↗</span></a>}{(contactDetails.links ?? []).map(link => <a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.label} <span>새 탭 ↗</span></a>)}</nav>
       </div> : <div className="orb-about-editorial">
-        <p className="orb-editorial-eyebrow">ABOUT / JANG JUMIN</p><h1 id="orb-editorial-title" tabIndex={-1}>장주민</h1><p className="orb-about-lead">웹 개발과 보안을 배우고 기록합니다.</p>
-        <section><h2>만들며 배우는 과정</h2><p>중부대학교 정보보호학과에서 공부하며, 수업과 개인 학습의 결과물을 직접 만들고 다듬고 있습니다. 이 포트폴리오는 프로젝트와 학습 과정을 한곳에 기록하는 공간입니다.</p></section>
-        <section><h2>관심 분야</h2><p>웹 인터페이스와 사용자 인터랙션, 리눅스와 보안에 관심을 두고 탐색합니다.</p></section>
-        <section><h2>작업 방식</h2><p>문제를 작게 나누어 구현하고 실제 화면에서 동작을 확인합니다. 완성된 결과뿐 아니라 문제를 찾아 고쳐 나가는 과정도 기록합니다.</p></section>
-        <section><h2>이력서</h2>{contactDetails.resume ? <a href={contactDetails.resume} target="_blank" rel="noreferrer">이력서 보기 ↗</a> : <p className="orb-pending">등록 예정</p>}</section>
+        <p className="orb-editorial-eyebrow">{content.categories.find(item => item.id === "about")?.label}</p><h1 id="orb-editorial-title" tabIndex={-1}>{about.name || "소개 등록 예정"}</h1><p className="orb-about-lead">{about.lead}</p>
+        <section><h2>{about.bioTitle}</h2><p>{about.bio}</p></section>
+        <section><h2>{about.interestsTitle}</h2><p>{about.interests}</p></section>
+        <section><h2>{about.workStyleTitle}</h2><p>{about.workStyle}</p></section>
+        <section><h2>이력서</h2>{about.resume ? <a href={about.resume} target="_blank" rel="noreferrer">이력서 보기 ↗</a> : <p className="orb-pending">등록 예정</p>}</section>
       </div>}
     </div>
   </div>

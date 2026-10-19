@@ -262,7 +262,7 @@ export function FeaturedProjectsCarousel({ projects, expanded = false, initialPr
             <div className="project-card-wrap" key={`${copy}-${project.id}`} data-copy={copy}>
             <Link
               className={`project-card accent-${project.accent}`}
-              href={`/projects/${project.id}`}
+              href={`/projects/${project.routeId ?? project.id}`}
               key={`${copy}-${project.id}`}
               data-copy={copy}
               aria-hidden={copy !== 1}

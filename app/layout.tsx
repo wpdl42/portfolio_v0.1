@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import "./globals.css"
 import "./orb.css"
 import "./project-editor.css"
+import "./cms.css"
 
 export const metadata: Metadata = {
   title: {

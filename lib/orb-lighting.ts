@@ -1,7 +1,8 @@
-import { categories, searchPortfolio, type CategoryId } from "@/lib/orb-content"
+import { categories, searchPortfolio, type CategoryId, type Category } from "@/lib/orb-content"
+import type { PortfolioContent } from "@/lib/cms/types"
 import type { Project } from "@/lib/portfolio"
 
-export type OrbLighting = { category: CategoryId | null; source: "interaction" | "orb" | "selection" | "search" | "default" }
+export type OrbLighting = { category: CategoryId | null; source: "interaction" | "orb" | "selection" | "search" | "default"; palette?: Category[] }
 export type OrbLightValues = { color: [number, number, number]; direction: [number, number]; strength: number }
 
 // Category hover is the reference material for both interaction paths.
@@ -34,15 +35,16 @@ export function blendLightColors(from: LightColor, to: LightColor, amount: numbe
 }
 
 // One priority rule for both the WebGL material and its static fallback.
-export function resolveOrbLighting(interaction: CategoryId | null, selected: CategoryId | null, query: string, catalog?: Project[]): OrbLighting {
-  if (interaction) return { category: interaction, source: "interaction" }
-  if (selected) return { category: selected, source: "selection" }
-  const match = searchPortfolio(query, catalog)[0]
-  return match ? { category: match.category, source: "search" } : { category: null, source: "default" }
+export function resolveOrbLighting(interaction: CategoryId | null, selected: CategoryId | null, query: string, catalog?: Project[], content?: PortfolioContent): OrbLighting {
+  const palette = content?.categories
+  if (interaction) return { category: interaction, source: "interaction", palette }
+  if (selected) return { category: selected, source: "selection", palette }
+  const match = searchPortfolio(query, catalog, content)[0]
+  return match ? { category: match.category, source: "search", palette } : { category: null, source: "default", palette }
 }
 
 export function categoryLight(lighting: OrbLighting): OrbLightValues {
-  const color = categories.find((category) => category.id === lighting.category)?.color ?? "#ffffff"
+  const color = (lighting.palette ?? categories).find((category) => category.id === lighting.category)?.color ?? "#ffffff"
   return {
     color: [1, 3, 5].map((offset) => parseInt(color.slice(offset, offset + 2), 16) / 255) as [number, number, number],
     direction: [0, 0],

@@ -1,11 +1,13 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
-import { categories, searchKindLabels, searchPortfolio, type SearchItem } from "@/lib/orb-content"
+import { searchKindLabels, searchPortfolio, type SearchItem } from "@/lib/orb-content"
+import type { PortfolioContent } from "@/lib/cms/types"
 import { useSearchResultSpace } from "@/hooks/useSearchResultSpace"
 import type { Project } from "@/lib/portfolio"
 
-export function OrbSearch({ query, onQueryChange, onSelect, onOpenChange, projects }: { query: string; onQueryChange: (value: string) => void; onSelect: (item: SearchItem) => void; onOpenChange: (open: boolean) => void; projects: Project[] }) {
+export function OrbSearch({ query, onQueryChange, onSelect, onOpenChange, projects, content }: { query: string; onQueryChange: (value: string) => void; onSelect: (item: SearchItem) => void; onOpenChange: (open: boolean) => void; projects: Project[]; content: PortfolioContent }) {
+  const categories = content.categories
   const [focused, setFocused] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -13,7 +15,7 @@ export function OrbSearch({ query, onQueryChange, onSelect, onOpenChange, projec
   const wrapRef = useRef<HTMLDivElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
   const composingRef = useRef(false)
-  const results = useMemo(() => searchPortfolio(query, projects), [query, projects])
+  const results = useMemo(() => searchPortfolio(query, projects, content), [query, projects, content])
   const open = focused && !dismissed && !!query.trim()
   const selected = selectedIndex === null ? null : results[selectedIndex]
   useSearchResultSpace(wrapRef, resultsRef, open, query)

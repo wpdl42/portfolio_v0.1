@@ -12,7 +12,7 @@ const orbits = [
   { phase: 3.6, speed: -.067, x: 16, y: 14 },
 ]
 
-export function useSatelliteMotion(scene: RefObject<HTMLDivElement | null>, activeCategory: CategoryId | null, enabled: boolean, searchOpen = false) {
+export function useSatelliteMotion(scene: RefObject<HTMLDivElement | null>, activeCategory: CategoryId | null, enabled: boolean, searchOpen = false, layoutKey = "") {
   const activeRef = useRef(activeCategory)
   const enabledRef = useRef(enabled)
   const searchOpenRef = useRef(searchOpen)
@@ -118,5 +118,5 @@ export function useSatelliteMotion(scene: RefObject<HTMLDivElement | null>, acti
       document.removeEventListener("visibilitychange", wake)
       cleanups.forEach((cleanup) => cleanup())
     }
-  }, [scene])
+  }, [scene, layoutKey])
 }

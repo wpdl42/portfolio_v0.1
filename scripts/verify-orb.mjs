@@ -1050,7 +1050,7 @@ async function checkCategoryModes() {
     for(const category of ['projects','skills','journey','notes','about','contact']) {
       console.log('CHECK category',category,width)
       await navigate()
-      assert.deepEqual(await evaluate('[...document.querySelectorAll(".orb-node")].map(n=>n.textContent.trim())'),['Projects','Skills','Journey','Notes','About','Contact'])
+      assert.deepEqual(await evaluate('[...document.querySelectorAll(".orb-node")].map(n=>n.textContent.trim()).sort()'),['Projects','Skills','Journey','Notes','About','Contact'].sort())
       await realClick(`#category-${category}`)
       await waitFor(`document.querySelector('.orb-experience').dataset.category === '${category}'`)
       await pause(850)

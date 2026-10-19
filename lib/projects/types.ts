@@ -25,4 +25,10 @@ export type Project = {
   thumbnail?: string
   keywords?: string[]
   detail?: ProjectDetail
+  githubLink?: string
+  teamType?: "" | "personal" | "team"
+  kind?: "project" | "experiment"
+  routeId?: string
+  illustration?: string
+  version?: number
 }

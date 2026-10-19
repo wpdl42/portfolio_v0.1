@@ -16,12 +16,12 @@ import { CategoryContent } from "@/components/CategoryContent"
 import { OrbEditorialPanel } from "@/components/OrbEditorialPanel"
 import { OrbSearch } from "@/components/OrbSearch"
 import { FluidOrb } from "@/components/FluidOrb"
-import { ProjectEditor } from "@/components/ProjectEditor"
 import { useSatelliteMotion } from "@/hooks/useSatelliteMotion"
 import {
   type Project,
 } from "@/lib/portfolio"
-import { categories, matchesCategory, parseCategory, type CategoryId } from "@/lib/orb-content"
+import { categories as navigationSlots, matchesCategory, parseCategory, type CategoryId } from "@/lib/orb-content"
+import type { PortfolioContent } from "@/lib/cms/types"
 import { resolveOrbLighting } from "@/lib/orb-lighting"
 import { matchesProjectFilter, projectFilters } from "@/lib/projects/filters"
 
@@ -29,14 +29,19 @@ type SheetState = "closed" | "partial" | "expanded"
 
 export function OrbExperience({
   projects,
+  content,
+  isAdmin,
   initialCategory,
   initialView,
 }: {
   projects: Project[]
+  content: PortfolioContent
+  isAdmin: boolean
   initialCategory?: string
   initialView?: string
 }) {
   const router = useRouter()
+  const categories = content.categories
   const initialActive = parseCategory(initialCategory)
   const [activeCategory, setActiveCategory] = useState<CategoryId | null>(
     initialActive,
@@ -61,13 +66,12 @@ export function OrbExperience({
   const interactionCategory =
     sheetState === "expanded" || editorial ? null : (hoveredCategory ?? focusedCategory)
   const lighting = useMemo(
-    () => resolveOrbLighting(interactionCategory, activeCategory, searchQuery, projects),
-    [interactionCategory, activeCategory, searchQuery, projects],
+    () => resolveOrbLighting(interactionCategory, activeCategory, searchQuery, projects, content),
+    [interactionCategory, activeCategory, searchQuery, projects, content],
   )
   const [targetProjectId, setTargetProjectId] = useState<number | null>(null)
   const [filter, setFilter] = useState(initialCategory === "experiments" ? "Experiments" : "All")
   const [sort, setSort] = useState("Latest")
-  const [projectEditorOpen, setProjectEditorOpen] = useState(false)
   const sheetRef = useRef<HTMLElement>(null)
   const sheetScrollRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{
@@ -84,7 +88,7 @@ export function OrbExperience({
   const focusPanelRef = useRef(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const [searchResultsOpen, setSearchResultsOpen] = useState(false)
-  useSatelliteMotion(sceneRef, activeCategory, sheetState !== "expanded", searchResultsOpen)
+  useSatelliteMotion(sceneRef, activeCategory, sheetState !== "expanded", searchResultsOpen, categories.map(category => category.id).join(","))
 
   useEffect(() => {
     if (!initialActive) return
@@ -195,7 +199,13 @@ export function OrbExperience({
     view: SheetState,
     replace = false,
   ) {
-    const url = category ? `/?category=${category}&view=${view}` : "/"
+    const params = new URLSearchParams()
+    if (category) {
+      params.set("category", category)
+      params.set("view", view)
+      if (category === "projects" && filter === "Experiments") params.set("filter", "Experiments")
+    }
+    const url = category ? `/?${params}` : "/"
     if (window.location.pathname + window.location.search === url) return
     window.history[replace ? "replaceState" : "pushState"](null, "", url)
   }
@@ -219,6 +229,7 @@ export function OrbExperience({
     sheetScrollRef.current?.scrollTo({ top: 0 })
     setUrl(category, "partial")
     if (nextFilter === "Experiments") window.history.replaceState(null, "", `/?category=projects&view=partial&filter=Experiments`)
+    else if (category === "projects") window.history.replaceState(null, "", "/?category=projects&view=partial")
   }
 
   function changeSheet(next: SheetState) {
@@ -337,15 +348,15 @@ export function OrbExperience({
         /J
       </Link>
       <div className="orb-identity">
-        <p>Jang Jumin</p>
-        <span>웹 개발 · 보안을 배우고 기록합니다.</span>
+        <p>{content.about.homeName}</p>
+        <span>{content.about.homeRole}</span>
       </div>
 
       <div
         className="orb-scene"
         ref={sceneRef}
-        inert={sheetState === "expanded" || editorial || projectEditorOpen}
-        aria-hidden={sheetState === "expanded" || editorial || projectEditorOpen}
+        inert={sheetState === "expanded" || editorial}
+        aria-hidden={sheetState === "expanded" || editorial}
       >
         <div className="orb-ambient" aria-hidden="true" />
         <div className="orb-orbit orb-orbit-one" aria-hidden="true">
@@ -367,17 +378,17 @@ export function OrbExperience({
           <i />
         </div>
         <div className="orb-sphere" aria-hidden="true">
-          <FluidOrb active={!projectEditorOpen && (editorial || sheetState !== "expanded")} interactive={!editorial && !projectEditorOpen} lighting={lighting} />
+          <FluidOrb active={editorial || sheetState !== "expanded"} interactive={!editorial} lighting={lighting} />
         </div>
-        {categories.map((category) => (
+        {categories.map((category, slot) => (
           <button
             key={category.id}
             id={`category-${category.id}`}
             type="button"
-            className={`orb-node orb-node-${category.id}`}
+            className={`orb-node orb-node-${navigationSlots[slot].id}`}
             aria-pressed={activeCategory === category.id}
             data-glowing={
-              sheetState === "closed" && matchesCategory(searchQuery, category, projects)
+              sheetState === "closed" && matchesCategory(searchQuery, category, projects, content)
                 ? "true"
                 : undefined
             }
@@ -420,6 +431,7 @@ export function OrbExperience({
           </button>
         ))}
         <OrbSearch
+          content={content}
           projects={projects}
           onOpenChange={setSearchResultsOpen}
           query={searchQuery}
@@ -485,10 +497,10 @@ export function OrbExperience({
                   </h1>
                   {(activeCategory === "projects" || activeCategory === "notes") && <span>
                     {activeCategory === "projects"
-                      ? `${projects.length} Projects`
+                      ? `${projects.filter(project => project.kind !== "experiment").length} Projects`
                       : activeCategory === "notes" ? "Notes archive" : ""}
                   </span>}
-                  {activeCategory === "projects" && <button className="project-editor-open" type="button" onClick={() => setProjectEditorOpen(true)}>프로젝트 편집</button>}
+                  {isAdmin && activeCategory && !editorial && <Link className="cms-edit-link" href={`/admin/${activeCategory}`}>편집</Link>}
                 </div>
                 <p>{selected?.intro}</p>
               </div>
@@ -536,6 +548,7 @@ export function OrbExperience({
                 projects={visibleProjects}
                 targetProjectId={targetProjectId}
                 experiments={filter === "Experiments"}
+                content={content}
               />
             )}
           </div>
@@ -563,8 +576,9 @@ export function OrbExperience({
           </button>
         </div>
       </section>
-      {projectEditorOpen && <ProjectEditor projects={projects} onClose={() => setProjectEditorOpen(false)} />}
-      {editorial && <OrbEditorialPanel category={activeCategory as "about" | "contact"} open={sheetState !== "closed"} onClose={() => closeSheet()} />}
+      {isAdmin && sheetState === "closed" && <nav className="cms-home-tools" aria-label="관리자 도구"><Link href="/admin/categories">위성 설정</Link><Link href="/admin/projects">콘텐츠 관리</Link></nav>}
+      {content.status !== "ready" && <p className="cms-load-notice" role="status">{content.status === "unavailable" ? "콘텐츠를 불러오지 못했습니다." : "콘텐츠 초기 이전이 필요합니다."} <button type="button" onClick={() => router.refresh()}>다시 불러오기</button></p>}
+      {editorial && <OrbEditorialPanel category={activeCategory as "about" | "contact"} content={content} isAdmin={isAdmin} open={sheetState !== "closed"} onClose={() => closeSheet()} />}
     </div>
   )
 }

@@ -1,5 +1,4 @@
 export type { Project } from "@/lib/projects/types"
-export { projects } from "@/lib/projects/catalog"
 
 export type Skill = {
   name: string
