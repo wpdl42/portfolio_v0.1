@@ -33,3 +33,12 @@ test('validates category colors, order, bounded text and defaults new content to
   assert.equal(parseCmsValues('categories',{...toFormValues('categories'),label:'Projects',color:'#aabbcc',order:'-1'}).valid,false)
   assert.equal(parseCmsValues('projects',{...toFormValues('projects'),title:'x'.repeat(121),description:'Summary'}).valid,false)
 })
+
+test('validates standalone About entries and both web and email contact links', () => {
+  assert.equal(parseCmsValues('about-sections',{...toFormValues('about-sections'),title:'Interest',body:'Details'}).valid,true)
+  assert.equal(parseCmsValues('about-sections',{...toFormValues('about-sections'),title:'Interest',body:'Details',section:'component-to-execute'}).valid,false)
+  assert.equal(parseCmsValues('contact-links',{...toFormValues('contact-links'),label:'GitHub',url:'https://github.com/example',type:'github'}).valid,true)
+  assert.equal(parseCmsValues('contact-links',{...toFormValues('contact-links'),label:'Email',email:'test@example.com',type:'email'}).valid,true)
+  assert.equal(parseCmsValues('contact-links',{...toFormValues('contact-links'),label:'Email',type:'email'}).valid,false)
+  assert.equal(parseCmsValues('contact-links',{...toFormValues('contact-links'),label:'Site',url:'javascript:alert(1)'}).valid,false)
+})

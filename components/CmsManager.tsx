@@ -3,9 +3,10 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react"
-import { cmsFields, cmsKinds, cmsLabels, parseCmsValues, safeContentUrl, toFormValues, type CmsKind } from "@/lib/cms/schema"
+import { cmsFields, cmsNavigation, cmsLabels, canDeleteCmsKind, parseCmsValues, safeContentUrl, toFormValues, type CmsKind } from "@/lib/cms/schema"
 import type { CmsItem } from "@/lib/cms/types"
 import { useUnsavedNavigation } from "@/hooks/useUnsavedNavigation"
+import { CmsConfirmDialog } from "@/components/CmsConfirmDialog"
 
 function ImagePreview({ src }: { src: string }) {
   const [failed, setFailed] = useState(false)
@@ -19,6 +20,7 @@ export function CmsManager({ kind, initialItems, expiresAt }: { kind: CmsKind; i
   const [baseline, setBaseline] = useState(() => JSON.stringify(values))
   const [errors, setErrors] = useState<Record<string, string>>({}), [busy, setBusy] = useState(false), [message, setMessage] = useState("")
   const [expired, setExpired] = useState(false), [conflict, setConflict] = useState(false)
+  const [deleting, setDeleting] = useState(false), [deleteError, setDeleteError] = useState("")
   const submitting = useRef(false)
   const leaving = useRef(false)
   const dirty = JSON.stringify(values) !== baseline
@@ -78,11 +80,27 @@ export function CmsManager({ kind, initialItems, expiresAt }: { kind: CmsKind; i
     setBusy(true)
     try { const response = await fetch("/api/admin/session", { method: "DELETE" }); if (!response.ok) throw new Error(); leaving.current = true; router.replace("/admin/login"); router.refresh() } catch { leaving.current = false; setMessage("로그아웃을 완료하지 못했습니다. 다시 시도해 주세요."); setBusy(false) }
   }
-  const previewUrl = kind === "projects" && selected ? `/projects/${selected.key}` : kind === "notes" && selected ? `/notes/${String(selected.data.slug)}` : `/?category=${kind === "categories" ? "projects" : kind}&view=expanded`
+  async function remove() {
+    if (!selected || submitting.current) return
+    submitting.current = true; setBusy(true); setDeleteError("")
+    try {
+      const response = await fetch(`/api/admin/content/${kind}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: selected.key, version: selected.version }), signal: AbortSignal.timeout(15000) })
+      const result = await response.json()
+      if (!response.ok) { setDeleteError(result.error || "삭제하지 못했습니다."); setExpired(response.status === 401); setConflict(response.status === 409); return }
+      const remaining = items.filter(item => item.key !== selected.key), nextItem = remaining[0] ?? null, next = toFormValues(kind, nextItem?.data)
+      setItems(remaining); setSelected(nextItem); setValues(next); setBaseline(JSON.stringify(next)); setErrors({}); setConflict(false); setDeleting(false); setMessage("휴지통으로 이동했습니다. 휴지통에서 복원할 수 있습니다."); router.refresh()
+    } catch { setDeleteError("삭제를 완료하지 못했습니다. 입력 내용은 유지됩니다. 연결 상태를 확인하고 다시 시도해 주세요.") }
+    finally { submitting.current = false; setBusy(false) }
+  }
+  const parentKind = kind === "about-sections" ? "about" : kind === "contact-links" ? "contact" : kind
+  const selectedTitle = selected ? String(selected.data.title ?? selected.data.name ?? selected.data.label ?? selected.key) : ""
+  const previewUrl = kind === "projects" && selected ? `/projects/${selected.key}` : kind === "notes" && selected ? `/notes/${String(selected.data.slug)}` : `/?category=${parentKind === "categories" ? "projects" : parentKind}&view=expanded`
   const thumbnail = values.thumbnail
   return <div className="cms-admin">
     <header className="cms-admin-header"><div><p className="cms-eyebrow">PORTFOLIO CONTENT</p><h1>{cmsLabels[kind]} 관리</h1></div><div><Link href="/" onClick={navigate}>홈</Link><a href={previewUrl} target="_blank" rel="noreferrer">공개 화면 ↗</a><button type="button" disabled={busy} onClick={logout}>로그아웃</button></div></header>
-    <nav className="cms-admin-nav" aria-label="콘텐츠 종류">{cmsKinds.map(section => <Link key={section} href={`/admin/${section}`} aria-current={kind === section ? "page" : undefined} onClick={navigate}>{cmsLabels[section]}</Link>)}</nav>
+    <nav className="cms-admin-nav" aria-label="콘텐츠 종류">{cmsNavigation.map(section => <Link key={section} href={`/admin/${section}`} aria-current={parentKind === section ? "page" : undefined} onClick={navigate}>{cmsLabels[section]}</Link>)}<Link href="/admin/trash" onClick={navigate}>휴지통</Link></nav>
+    {parentKind === "about" && <nav className="cms-subnav" aria-label="About 편집"><Link href="/admin/about" onClick={navigate}>기본 소개</Link><Link href="/admin/about-sections" onClick={navigate}>추가 소개·관심 분야·작업 방식 항목</Link></nav>}
+    {parentKind === "contact" && <nav className="cms-subnav" aria-label="Contact 편집"><Link href="/admin/contact" onClick={navigate}>기본 연락 안내</Link><Link href="/admin/contact-links" onClick={navigate}>개별 연락 링크 추가·수정·삭제</Link></nav>}
     {expired && <p className="cms-alert" role="alert">관리자 세션이 만료되었습니다. 입력 내용은 유지됩니다. <a href={`/admin/login?returnTo=/admin/${kind}`} target="_blank" rel="noreferrer">새 탭에서 다시 로그인 ↗</a> 후 저장을 다시 눌러 주세요.</p>}
     <div className="cms-admin-grid"><aside className="cms-items" aria-label="편집 항목">
       {!singleton && <button type="button" className="cms-add" disabled={busy} onClick={() => choose(null)}>+ 새 항목 추가</button>}
@@ -99,7 +117,9 @@ export function CmsManager({ kind, initialItems, expiresAt }: { kind: CmsKind; i
         {thumbnail && safeContentUrl(thumbnail,true) && <div className="cms-field-wide"><ImagePreview key={thumbnail} src={thumbnail} /></div>}
         {kind === "about" && values.resume && safeContentUrl(values.resume) && <a href={values.resume} target="_blank" rel="noreferrer">이력서 미리보기 ↗</a>}
         <footer className="cms-save-bar"><div><p role="status" aria-live="polite">{message || errors._form || (busy ? "저장 중…" : "저장 버튼을 누르면 MongoDB에 반영됩니다.")}</p>{conflict && <button type="button" onClick={reload} disabled={busy}>최신 내용 불러오기</button>}</div><div><button type="button" disabled={busy} onClick={() => choose(selected)}>취소</button><button type="submit" className="cms-primary" disabled={busy || singleton && !selected}>{busy ? "저장 중…" : "저장"}</button></div></footer>
+        {selected && canDeleteCmsKind(kind) && <div className="cms-delete-area cms-field-wide"><p>이 항목을 공개 화면에서 내리고 휴지통에 보관합니다.</p><button type="button" className="cms-danger cms-delete-open" disabled={busy} onClick={() => { setDeleteError(""); setDeleting(true) }}>이 항목 삭제</button></div>}
       </form>
     </section></div>
+    {deleting && selected && <CmsConfirmDialog title={`“${selectedTitle}” 삭제`} description={`공개 목록·상세·검색과 관련 콘텐츠에서 제외됩니다. 원본과 연결은 보존되며 휴지통에서 복원할 수 있습니다.${dirty ? " 저장하지 않은 변경 사항은 버려집니다." : ""}`} action="삭제" busy={busy} error={deleteError} onCancel={() => setDeleting(false)} onConfirm={remove} />}
   </div>
 }

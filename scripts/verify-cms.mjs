@@ -9,6 +9,7 @@ import nextEnv from '@next/env'
 import { MongoClient } from 'mongodb'
 import { toFormValues } from '../lib/cms/schema.ts'
 import { openTestBrowser, pause } from './helpers/browser.mjs'
+import { checkSoftDeletion } from './check-soft-deletion.mjs'
 
 nextEnv.loadEnvConfig(process.cwd())
 if(process.argv.includes('--capture') && !process.env.PORTFOLIO_CAPTURE_DIR) process.env.PORTFOLIO_CAPTURE_DIR=path.join(process.cwd(),'.next','cms-verification')
@@ -198,13 +199,17 @@ try {
   await mongo.connect()
   assert.equal((await db.listCollections().toArray()).length,0,'Verification DB must start empty')
   const first=await runChild(['scripts/migrate-content.mjs']), second=await runChild(['scripts/migrate-content.mjs'])
-  assert.equal(first.inserted,34); assert.equal(second.inserted,0); assert.equal(second.missingFieldsAdded,0)
-  console.log('PASS migration: real MongoDB, 34 initial records, idempotent second execution')
-  server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{env,windowsHide:true,stdio:'ignore'})
-  let ready=false
-  for(let i=0;i<100;i++) { try { if((await fetch(`${base}/api/admin/session`)).ok) {ready=true;break} } catch {} await pause(200) }
+  assert.equal(first.inserted,36); assert.equal(second.inserted,0); assert.equal(second.missingFieldsAdded,0)
+  console.log('PASS migration: real MongoDB, 36 initial records including contact links, idempotent second execution')
+  server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{env,windowsHide:true,stdio:['ignore','pipe','ignore']})
+  let childReady=false, ready=false
+  server.stdout.on('data',chunk=>{if(String(chunk).includes('Ready')) childReady=true})
+  // Never send test mutations to a pre-existing server occupying this port.
+  for(let i=0;i<100;i++) { if(server.exitCode!==null) break; try { if(childReady && (await fetch(`${base}/api/admin/session`)).ok) {ready=true;break} } catch {} await pause(200) }
   assert.ok(ready,'Production verification server did not start')
-  await checkBrowser(await checkApi())
+  if(process.argv.includes('--deletion-only')) await login()
+  else await checkBrowser(await checkApi())
+  await checkSoftDeletion({base,api,list,save,db,testCode,runChild})
   await login(); await db.collection('admin_sessions').updateMany({},{$set:{expiresAt:new Date(Date.now()-1000)}})
   assert.equal((await api('/api/admin/content/projects')).status,401,'Expired session must be rejected by server')
   await login(); assert.equal((await api('/api/admin/session','DELETE')).status,200); assert.equal((await api('/api/admin/content/projects')).status,401)

@@ -39,7 +39,7 @@ export function resolveOrbLighting(interaction: CategoryId | null, selected: Cat
   const palette = content?.categories
   if (interaction) return { category: interaction, source: "interaction", palette }
   if (selected) return { category: selected, source: "selection", palette }
-  const match = searchPortfolio(query, catalog, content)[0]
+  const match = searchPortfolio(query, catalog, content).find(item => item.kind !== "admin")
   return match ? { category: match.category, source: "search", palette } : { category: null, source: "default", palette }
 }
 

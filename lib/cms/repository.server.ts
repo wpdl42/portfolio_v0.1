@@ -10,7 +10,7 @@ import { categoryIds, type CmsItem, type PortfolioContent } from "./types"
 import { parseCmsValues, toFormValues, type CmsKind } from "./schema"
 import { ensureContentIndexes } from "./indexes.mjs"
 
-export type ContentDocument = { _id: string; kind: CmsKind; data: Record<string, unknown>; slugs?: string[]; version?: number; createdAt?: Date; updatedAt?: Date }
+export type ContentDocument = { _id: string; kind: CmsKind; data: Record<string, unknown>; slugs?: string[]; version?: number; createdAt?: Date; updatedAt?: Date; deletedAt?: Date | null }
 export class CmsError extends Error { constructor(public status: number, message: string, public fields?: Record<string, string>) { super(message) } }
 export async function cmsDatabase() {
   const connection = connectPortfolioMongo()
@@ -27,7 +27,7 @@ export async function ensureCmsIndexes() {
 }
 const dateText = (value: unknown) => value instanceof Date ? value.toISOString() : null
 function contentItem(document: ContentDocument): CmsItem {
-  return { key: document._id, version: document.version ?? 0, createdAt: dateText(document.createdAt), updatedAt: dateText(document.updatedAt), data: document.data }
+  return { key: document._id, version: document.version ?? 0, createdAt: dateText(document.createdAt), updatedAt: dateText(document.updatedAt), deletedAt: dateText(document.deletedAt), data: document.data }
 }
 export function projectFromDocument(document: Document): Project | null {
   if (!Number.isSafeInteger(document.id) || document.id < 1) return null
@@ -35,17 +35,18 @@ export function projectFromDocument(document: Document): Project | null {
   if (!parsed.valid) return null
   return { ...parsed.data, id: document.id, slug: typeof document.slug === "string" ? document.slug : undefined, routeId: typeof document.routeId === "string" ? document.routeId : undefined, illustration: typeof document.illustration === "string" ? document.illustration : undefined, version: document.version ?? 0 } as Project
 }
-export async function listAdminContent(kind: CmsKind): Promise<CmsItem[]> {
+export async function listAdminContent(kind: CmsKind, deleted = false): Promise<CmsItem[]> {
   const db = await cmsDatabase()
+  const deletionFilter = { deletedAt: deleted ? { $type: "date" as const } : null }
   if (kind === "projects") {
-    const rows = await db.collection("projects").find({}, { maxTimeMS: 5000 }).sort({ order: 1, id: 1 }).limit(1000).toArray()
+    const rows = await db.collection("projects").find(deletionFilter, { maxTimeMS: 5000 }).sort({ order: 1, id: 1 }).limit(1000).toArray()
     return rows.map(row => {
       const project = projectFromDocument(row)
       if (!project) throw new CmsError(422, `프로젝트 ${row.id ?? ""}의 데이터 형식을 확인해 주세요.`)
-      return { key: String(row.id), version: row.version ?? 0, data: project as unknown as Record<string, unknown>, createdAt: dateText(row.createdAt), updatedAt: dateText(row.updatedAt) }
+      return { key: String(row.id), version: row.version ?? 0, data: project as unknown as Record<string, unknown>, createdAt: dateText(row.createdAt), updatedAt: dateText(row.updatedAt), deletedAt: dateText(row.deletedAt) }
     })
   }
-  return (await db.collection<ContentDocument>("portfolio_content").find({ kind }, { maxTimeMS: 5000 }).sort({ "data.order": 1, _id: 1 }).limit(1000).toArray()).map(contentItem)
+  return (await db.collection<ContentDocument>("portfolio_content").find({ kind, ...deletionFilter }, { maxTimeMS: 5000 }).sort({ "data.order": 1, _id: 1 }).limit(1000).toArray()).map(contentItem)
 }
 export async function saveCmsContent(kind: CmsKind, values: unknown, key?: string, version?: number) {
   const parsed = parseCmsValues(kind, values)
@@ -68,7 +69,8 @@ export async function saveCmsContent(kind: CmsKind, values: unknown, key?: strin
         if (!/^[1-9]\d*$/.test(key)) throw new CmsError(400, "올바른 프로젝트 ID가 필요합니다.")
         const existing = await collection.findOne({ id: Number(key) })
         if (!existing) throw new CmsError(404, "프로젝트를 찾을 수 없습니다.")
-        const match: Filter<Document> = { _id: existing._id, ...(version === 0 ? { $or: [{ version: 0 }, { version: { $exists: false } }] } : { version }) }
+        if (existing.deletedAt) throw new CmsError(409, "휴지통에 있는 항목입니다. 복원한 뒤 편집해 주세요.")
+        const match: Filter<Document> = { _id: existing._id, deletedAt: null, ...(version === 0 ? { $or: [{ version: 0 }, { version: { $exists: false } }] } : { version }) }
         const fields = Object.fromEntries(Object.entries(data).flatMap(([field, value]) => field === "detail" ? Object.entries(value as Record<string, unknown>).map(([name, text]) => [`detail.${name}`, text]) : [[field, value]]))
         const result = await collection.findOneAndUpdate(match, { $set: { ...fields, ...(canonicalUrl ? { canonicalUrl } : {}), updatedAt: now }, ...(!canonicalUrl ? { $unset: { canonicalUrl: "" } } : {}), $inc: { version: 1 } }, { returnDocument: "after" })
         if (!result) throw new CmsError(409, "다른 편집에서 먼저 수정했습니다. 최신 내용을 불러온 뒤 다시 저장해 주세요.")
@@ -87,9 +89,10 @@ export async function saveCmsContent(kind: CmsKind, values: unknown, key?: strin
     if (key) {
       const existing = await collection.findOne({ _id: key, kind })
       if (!existing) throw new CmsError(404, "편집 항목을 찾을 수 없습니다.")
+      if (existing.deletedAt) throw new CmsError(409, "휴지통에 있는 항목입니다. 복원한 뒤 편집해 주세요.")
       const slugs = kind === "notes" ? [...new Set([...(existing.slugs ?? []), String(existing.data.slug), String(data.slug)])] : undefined
       const fields = Object.fromEntries(Object.entries(data).map(([field, value]) => [`data.${field}`, value]))
-      const result = await collection.findOneAndUpdate({ _id: key, kind, ...(version === 0 ? { $or: [{ version: 0 }, { version: { $exists: false } }] } : { version }) }, { $set: { ...fields, ...(slugs ? { slugs } : {}), updatedAt: now }, $inc: { version: 1 } }, { returnDocument: "after" })
+      const result = await collection.findOneAndUpdate({ _id: key, kind, deletedAt: null, ...(version === 0 ? { $or: [{ version: 0 }, { version: { $exists: false } }] } : { version }) }, { $set: { ...fields, ...(slugs ? { slugs } : {}), updatedAt: now }, $inc: { version: 1 } }, { returnDocument: "after" })
       if (!result) throw new CmsError(409, "다른 편집에서 먼저 수정했습니다. 최신 내용을 불러온 뒤 다시 저장해 주세요.")
       return contentItem(result)
     }
@@ -106,8 +109,8 @@ export const getPortfolioContent = cache(async (): Promise<PortfolioContent> => 
   try {
     const db = await cmsDatabase()
     const [projects, documents] = await Promise.all([
-      db.collection("projects").find({ visibility: "public" }, { maxTimeMS: 5000 }).sort({ order: 1, id: 1 }).limit(1000).toArray(),
-      db.collection<ContentDocument>("portfolio_content").find({ $or: [{ kind: { $in: ["about", "contact", "categories"] } }, { kind: { $in: ["skills", "journey", "notes"] }, "data.visibility": "public" }] }, { maxTimeMS: 5000 }).sort({ "data.order": 1, _id: 1 }).limit(3000).toArray(),
+      db.collection("projects").find({ visibility: "public", deletedAt: null }, { maxTimeMS: 5000 }).sort({ order: 1, id: 1 }).limit(1000).toArray(),
+      db.collection<ContentDocument>("portfolio_content").find({ deletedAt: null, $or: [{ kind: { $in: ["about", "contact", "categories"] } }, { kind: { $in: ["skills", "journey", "notes", "about-sections", "contact-links"] }, "data.visibility": "public" }] }, { maxTimeMS: 5000 }).sort({ "data.order": 1, _id: 1 }).limit(3000).toArray(),
     ])
     const valid = documents.flatMap(document => { const parsed = parseCmsValues(document.kind, toFormValues(document.kind, document.data)); return parsed.valid ? [{ ...document, data: parsed.data }] : [] })
     const categoryDocs = valid.filter(item => item.kind === "categories" && categoryIds.includes(item._id.slice(11) as typeof categoryIds[number]))
@@ -116,19 +119,22 @@ export const getPortfolioContent = cache(async (): Promise<PortfolioContent> => 
     const visibleIds = new Set(publicProjects.map(project => project.id))
     const items = (kind: CmsKind) => valid.filter(item => item.kind === kind).map(item => ({ ...item.data, id: item._id.slice(kind.length+1) }))
     const skills = items("skills").map(item => ({ ...item, projectIds: ((item as Record<string, unknown>).projectIds as number[]).filter(id => visibleIds.has(id)) }))
-    return { categories, projects: publicProjects, skills, journey: items("journey"), notes: items("notes"), about: valid.find(item => item.kind === "about")?.data ?? {}, contact: valid.find(item => item.kind === "contact")?.data ?? {}, status: categoryDocs.length === 6 ? "ready" : "empty" } as PortfolioContent
+    const links = items("contact-links") as unknown as { label: string; url: string; email: string; type: string }[]
+    const github = links.find(link => link.type === "github"), blog = links.find(link => link.type === "blog"), email = links.find(link => link.type === "email")
+    const contact = { ...(valid.find(item => item.kind === "contact")?.data ?? {}), email: email?.email ?? "", emailLabel: email?.label ?? "", github: github?.url ?? "", githubLabel: github?.label ?? "", blog: blog?.url ?? "", blogLabel: blog?.label ?? "", links: links.filter(link => link !== github && link !== blog && link !== email).map(link => ({ label: link.label, url: link.type === "email" ? `mailto:${link.email}` : link.url })) }
+    return { categories, projects: publicProjects, skills, journey: items("journey"), notes: items("notes"), about: { ...(valid.find(item => item.kind === "about")?.data ?? {}), sections: items("about-sections") }, contact, status: categoryDocs.length === 6 ? "ready" : "empty" } as PortfolioContent
   } catch { return base }
 })
 export async function findPublicNote(slug: string, includePrivate = false) {
   const db = await cmsDatabase()
-  const row = await db.collection<ContentDocument>("portfolio_content").findOne({ kind: "notes", slugs: slug, ...(!includePrivate ? { "data.visibility": "public" } : {}) }, { maxTimeMS: 5000 })
+  const row = await db.collection<ContentDocument>("portfolio_content").findOne({ kind: "notes", slugs: slug, deletedAt: null, ...(!includePrivate ? { "data.visibility": "public" } : {}) }, { maxTimeMS: 5000 })
   if (!row) return null
   const parsed = parseCmsValues("notes", toFormValues("notes", row.data))
-  return parsed.valid ? parsed.data as unknown as PortfolioContent["notes"][number] : null
+  return parsed.valid ? { ...parsed.data, key: row._id, version: row.version ?? 0 } as unknown as PortfolioContent["notes"][number] & { key: string; version: number } : null
 }
 export async function findProject(id: string, includePrivate = false) {
   if (!/^(?:[1-9]\d*|experiment-\d{2})$/.test(id)) return null
   const db = await cmsDatabase()
-  const row = await db.collection("projects").findOne({ ...(id.startsWith("experiment-") ? { routeId: id } : { id: Number(id) }), ...(!includePrivate ? { visibility: "public" } : {}) }, { maxTimeMS: 5000 })
+  const row = await db.collection("projects").findOne({ deletedAt: null, ...(id.startsWith("experiment-") ? { routeId: id } : { id: Number(id) }), ...(!includePrivate ? { visibility: "public" } : {}) }, { maxTimeMS: 5000 })
   return row ? projectFromDocument(row) : null
 }

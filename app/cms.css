@@ -56,6 +56,24 @@
 .cms-prose, .orb-about-editorial section p, .orb-skill-entry p, .orb-journey p { white-space: pre-wrap; overflow-wrap: anywhere; }
 .cms-error-page { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 18px; }
 .cms-error-page h1 { font-size: 2rem; font-weight: 500; }
+.cms-subnav { display: flex; flex-wrap: wrap; gap: 20px; padding: 0 0 24px; font-size: .85rem; color: #79588f; }
+.cms-subnav a { padding: 10px 0; text-decoration: underline; }
+.cms-delete-area { padding-top: 28px; margin-top: 18px; border-top: 1px dashed #d9b6bb; }
+.cms-delete-area p { color: #94666f; font-size: .8rem; }
+.cms-admin .cms-danger, .cms-danger { color: #a32f4c; border: 1px solid #d6a4b0; background: #fff1f2; border-radius: 10px; padding: 11px 18px; min-height: 44px; cursor: pointer; font: inherit; }
+.cms-confirm { width: min(480px,calc(100% - 32px)); max-height: calc(100dvh - 40px); overflow: auto; border: 1px solid #e1d4d7; border-radius: 20px; padding: clamp(22px,4vw,36px); color: #302936; background: #fffaf7; box-shadow: 0 28px 100px #34233530; }
+.cms-confirm::backdrop { background: #2e203a66; backdrop-filter: blur(3px); }
+.cms-confirm h2 { margin: 0 0 18px; font-size: 1.25rem; overflow-wrap: anywhere; }
+.cms-confirm p { font-size: .9rem; line-height: 1.8; }
+.cms-confirm > div { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.cms-confirm button { min-height: 44px; padding: 10px 22px; border: 1px solid #d8c8df; border-radius: 10px; cursor: pointer; }
+.cms-confirm button:disabled { opacity: .5; cursor: wait; }
+.cms-confirm button:focus-visible, .cms-danger:focus-visible { outline: 2px solid #9870b5; outline-offset: 3px; }
+.cms-trash-list { list-style: none; padding: 0; display: grid; gap: 16px; }
+.cms-trash-list li { display: flex; justify-content: space-between; align-items: center; gap: 16px; border: 1px solid #e3d9df; border-radius: 16px; padding: 24px; background: #fffcf9; overflow-wrap: anywhere; }
+.cms-trash-list h2 { font-size: 1.1rem; margin: 8px 0; }
+.cms-trash-list small, .cms-trash-list p { color: #8b778e; font-size: .8rem; }
+.cms-detail-tools { margin: 30px 0; }
 @media(max-width:768px) {
   .cms-admin { padding: 20px 16px; }
   .cms-admin-grid { grid-template-columns: 1fr; }

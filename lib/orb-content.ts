@@ -17,21 +17,22 @@ export function parseCategory(value?: string | null): CategoryId | null {
   if (value === "experiments") return "projects"
   return categories.some(category => category.id === value) ? value as CategoryId : null
 }
-export type SearchKind = "project" | "learning" | "experiment" | "page" | "category" | "note" | "skill"
+export type SearchKind = "project" | "learning" | "experiment" | "page" | "category" | "note" | "skill" | "admin"
 export type SearchItem = { id: string; label: string; category: CategoryId; kind: SearchKind; tags: string[]; description: string; projectId?: number; noteId?: string }
-export const searchKindLabels: Record<SearchKind, string> = { project: "프로젝트", learning: "학습", experiment: "실험", page: "페이지", category: "카테고리", note: "글", skill: "기술" }
+export const searchKindLabels: Record<SearchKind, string> = { project: "프로젝트", learning: "학습", experiment: "실험", page: "페이지", category: "카테고리", note: "글", skill: "기술", admin: "관리자 · 코드 인증 필요" }
 export const normalizeSearch = (value: string) => value.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase()
 type SearchContent = Pick<PortfolioContent, "categories" | "skills" | "journey" | "notes" | "about" | "contact">
 export function searchPortfolio(query: string, catalog: Project[] = [], content?: SearchContent): SearchItem[] {
   const needle = normalizeSearch(query)
   if (!needle) return []
+  if (needle === "/admin") return [{ id: "admin-login", label: "관리자 로그인", category: "projects", kind: "admin", tags: [], description: "기존 관리자 코드 인증 화면으로 이동합니다." }]
   const navigation = content?.categories ?? categories
   const items: SearchItem[] = [
     ...catalog.map((project): SearchItem => ({ id: `project-${project.id}`, label: project.title, category: "projects", kind: project.kind === "experiment" ? "experiment" : "project", tags: [...getProjectDetail(project).tags, ...(project.keywords ?? [])], description: project.description, projectId: project.id })),
     ...(content?.notes ?? []).map((note): SearchItem => ({ id: `note-${note.id}`, label: note.title, category: "notes", kind: "note", tags: note.tags, description: note.description, noteId: note.slug })),
     ...(content?.skills ?? []).map((skill): SearchItem => ({ id: `skill-${skill.id}`, label: `${skill.name} 활용 경험`, category: "skills", kind: "skill", tags: [skill.name, skill.group], description: skill.description })),
     ...(content?.journey ?? []).map((item): SearchItem => ({ id: `journey-${item.id}`, label: item.title, category: "journey", kind: "learning", tags: [item.activityType, item.period], description: item.description })),
-    ...(content?.about?.name ? [{ id: "about-me", label: content.about.name, category: "about" as const, kind: "page" as const, tags: ["소개", "profile"], description: `${content.about.lead} ${content.about.bio}` }] : []),
+    ...(content?.about?.name ? [{ id: "about-me", label: content.about.name, category: "about" as const, kind: "page" as const, tags: ["소개", "profile"], description: `${content.about.lead} ${content.about.bio} ${(content.about.sections ?? []).map(item => `${item.title} ${item.body}`).join(" ")}` }] : []),
     ...navigation.map((category): SearchItem => ({ id: category.id, label: category.label, category: category.id, kind: "category", tags: [category.id, ...category.keywords], description: category.intro })),
   ]
   const ranked = items.flatMap((item, order) => {
@@ -50,5 +51,5 @@ export function searchPortfolio(query: string, catalog: Project[] = [], content?
 }
 export function matchesCategory(query: string, category: Category, catalog: Project[] = [], content?: SearchContent): boolean {
   const exact = (content?.categories ?? categories).find(item => normalizeSearch(item.label) === normalizeSearch(query))
-  return exact ? exact.id === category.id : searchPortfolio(query, catalog, content).some(item => item.category === category.id)
+  return exact ? exact.id === category.id : searchPortfolio(query, catalog, content).some(item => item.kind !== "admin" && item.category === category.id)
 }

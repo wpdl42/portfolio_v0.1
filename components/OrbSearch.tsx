@@ -4,10 +4,16 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { searchKindLabels, searchPortfolio, type SearchItem } from "@/lib/orb-content"
 import type { PortfolioContent } from "@/lib/cms/types"
 import { useSearchResultSpace } from "@/hooks/useSearchResultSpace"
+import { useRouter } from "next/navigation"
 import type { Project } from "@/lib/portfolio"
 
 export function OrbSearch({ query, onQueryChange, onSelect, onOpenChange, projects, content }: { query: string; onQueryChange: (value: string) => void; onSelect: (item: SearchItem) => void; onOpenChange: (open: boolean) => void; projects: Project[]; content: PortfolioContent }) {
   const categories = content.categories
+  const router = useRouter()
+  function selectResult(item: SearchItem) {
+    if (item.kind === "admin") { setDismissed(true); router.push("/admin"); return }
+    onSelect(item)
+  }
   const [focused, setFocused] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -35,7 +41,7 @@ export function OrbSearch({ query, onQueryChange, onSelect, onOpenChange, projec
   function openSelected() {
     if (composingRef.current) return
     const item = selected ?? results[0]
-    if (item) onSelect(item)
+    if (item) selectResult(item)
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -60,9 +66,9 @@ export function OrbSearch({ query, onQueryChange, onSelect, onOpenChange, projec
     </form>
     {open && <div className="orb-search-results" ref={resultsRef}>
       <div id="orb-search-listbox" role="listbox" aria-label="검색 결과">
-        {results.map((result, index) => <button id={`result-${result.id}`} type="button" role="option" tabIndex={-1} aria-selected={selectedIndex === index} key={result.id} onMouseDown={(event) => event.preventDefault()} onMouseEnter={() => setSelectedIndex(index)} onClick={() => onSelect(result)}>
+        {results.map((result, index) => <button id={`result-${result.id}`} type="button" role="option" tabIndex={-1} aria-selected={selectedIndex === index} key={result.id} onMouseDown={(event) => event.preventDefault()} onMouseEnter={() => setSelectedIndex(index)} onClick={() => selectResult(result)}>
           <span className="orb-result-dot" style={{ background: categories.find((category) => category.id === result.category)?.color }} />
-          <span className="orb-result-copy"><span>{result.label}</span><small>{searchKindLabels[result.kind]} · {categories.find((category) => category.id === result.category)?.label}</small></span>
+          <span className="orb-result-copy"><span>{result.label}</span><small>{searchKindLabels[result.kind]}{result.kind !== "admin" && ` · ${categories.find((category) => category.id === result.category)?.label}`}</small></span>
           <span aria-hidden="true">↗</span>
         </button>)}
       </div>

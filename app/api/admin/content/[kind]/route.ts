@@ -2,6 +2,7 @@ import { adminError, assertSameOrigin, readAdminJson, requireAdmin } from "@/lib
 import { CmsError, listAdminContent, saveCmsContent } from "@/lib/cms/repository.server"
 import { isCmsKind } from "@/lib/cms/schema"
 import { revalidatePath } from "next/cache"
+import { changeDeletion } from "@/lib/cms/trash-route.server"
 export const runtime = "nodejs"
 type Context = { params: Promise<{ kind: string }> }
 export async function GET(_request: Request, context: Context) {
@@ -22,3 +23,4 @@ async function save(request: Request, context: Context, updating: boolean) {
 }
 export async function POST(request: Request, context: Context) { return save(request, context, false) }
 export async function PATCH(request: Request, context: Context) { return save(request, context, true) }
+export async function DELETE(request: Request, context: Context) { return changeDeletion(request, context.params, true) }
