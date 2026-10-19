@@ -46,7 +46,7 @@ export const skills: Skill[] = [
 
 export const history = [
   { year: "2023", text: "중부대학교 정보보호학과 입학" },
-  { year: "2024", text: "컴퓨터활용능력 2급 취득" },
+  { year: "2024", text: "자격증 취득" },
   { year: "2026", text: "복학 및 웹 개발 학습 진행" },
   { year: "NEXT", text: "리눅스와 보안 역량 확장" },
 ]
