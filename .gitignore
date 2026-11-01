@@ -5,3 +5,7 @@ out/
 !.env.example
 npm-debug.log*
 
+# Local documentation
+/docs/
+/README.md
+
