@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { useCallback, useEffect, useRef, type KeyboardEvent, type PointerEvent, type TransitionEvent } from "react"
-import type { Project } from "@/lib/portfolio"
-import { getProjectDetail } from "@/lib/project-details"
+import type { Project } from "@/lib/projects/types"
+import { getProjectDetail } from "@/lib/projects/catalog"
 import { ProjectArtwork } from "@/components/ProjectArtwork"
 
 type DragState = {

@@ -1,6 +1,6 @@
 import { categories, searchPortfolio, type CategoryId, type Category } from "@/lib/orb-content"
 import type { PortfolioContent } from "@/lib/cms/types"
-import type { Project } from "@/lib/portfolio"
+import type { Project } from "@/lib/projects/types"
 
 export type OrbLighting = { category: CategoryId | null; source: "interaction" | "orb" | "selection" | "search" | "default"; palette?: Category[] }
 export type OrbLightValues = { color: [number, number, number]; direction: [number, number]; strength: number }

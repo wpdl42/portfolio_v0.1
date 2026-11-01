@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react"
-import type { Project } from "@/lib/portfolio"
+import type { Project } from "@/lib/projects/types"
 import { getProjectArtwork } from "@/lib/projects/catalog"
 
 export function ProjectArtwork({ project }: { project: Project }) {

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import { ProjectDetailTabs } from "@/components/ProjectDetailTabs"
 import { ProjectArtwork } from "@/components/ProjectArtwork"
-import { getProjectDetail } from "@/lib/project-details"
+import { getProjectDetail } from "@/lib/projects/catalog"
 import { findProject } from "@/lib/cms/repository.server"
 import { readAdminSession } from "@/lib/admin/session.server"
 import { ExploreBackLink } from "@/components/ExploreBackLink"

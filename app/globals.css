@@ -97,13 +97,6 @@ main {
   color: var(--background);
 }
 
-.next-goals h2 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3.4rem);
-  line-height: 1.1;
-  letter-spacing: -0.055em;
-}
-
 .featured-viewport {
   overflow: hidden;
   padding-top: 18px;
@@ -190,179 +183,13 @@ main {
   padding: 28px;
 }
 
-.project-body h3,
-.assignment-card h2,
-.skill-card h2 {
+.project-body h3 {
   margin: 0;
   letter-spacing: -0.04em;
 }
 
-.project-body > p:last-child,
-.assignment-card > p {
+.project-body > p:last-child {
   color: var(--muted);
-}
-
-.inner-page {
-  padding: 90px 0 130px;
-}
-
-.page-intro {
-  max-width: 860px;
-  margin-bottom: 80px;
-}
-
-.page-intro h1 {
-  margin: 0;
-  font-size: clamp(3.5rem, 9vw, 7.4rem);
-  line-height: 0.9;
-  letter-spacing: -0.075em;
-}
-
-.page-description {
-  max-width: 680px;
-  margin: 30px 0 0;
-  color: var(--muted);
-  font-size: 1.05rem;
-  word-break: keep-all;
-}
-
-.assignment-state {
-  height: fit-content;
-  padding: 5px 10px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.assignment-grid,
-.skill-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.assignment-card {
-  min-height: 260px;
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-}
-
-.assignment-number {
-  margin-bottom: 45px;
-  color: var(--accent);
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-}
-
-.assignment-card h2 {
-  font-size: 1.35rem;
-}
-
-.assignment-card .assignment-state {
-  margin-top: auto;
-}
-
-.assignment-next {
-  border-style: dashed;
-  background: transparent;
-}
-
-.filter-list {
-  margin-bottom: 30px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.filter-list button {
-  padding: 9px 16px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.filter-list button.active {
-  border-color: var(--foreground);
-  background: var(--foreground);
-  color: var(--background);
-}
-
-.skill-card {
-  padding: 26px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-}
-
-.skill-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.skill-heading h2 {
-  font-size: 1.1rem;
-}
-
-.skill-heading span {
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.skill-track {
-  height: 7px;
-  margin-top: 24px;
-  overflow: hidden;
-  border-radius: 10px;
-  background: var(--surface-strong);
-}
-
-.skill-value {
-  height: 100%;
-  border-radius: inherit;
-  background: var(--accent);
-}
-
-.next-goals {
-  margin-top: 100px;
-  padding-top: 70px;
-  display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  gap: 80px;
-  border-top: 1px solid var(--line);
-}
-
-.next-goals ol {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--line);
-}
-
-.next-goals li {
-  padding: 20px 0;
-  display: flex;
-  gap: 20px;
-  border-bottom: 1px solid var(--line);
-  font-weight: 700;
-}
-
-.next-goals li span {
-  color: var(--accent);
-  font-size: 0.75rem;
 }
 
 .not-found {
@@ -379,27 +206,9 @@ main {
   letter-spacing: -0.06em;
 }
 
-@media (max-width: 900px) {
-
-  .next-goals {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
-  .assignment-grid,
-  .skill-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 640px) {
   .section-shell {
     width: min(100% - 32px, 1160px);
-  }
-
-  .assignment-grid,
-  .skill-grid {
-    grid-template-columns: 1fr;
   }
 
   .featured-track {

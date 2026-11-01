@@ -17,9 +17,7 @@ import { OrbEditorialPanel } from "@/components/OrbEditorialPanel"
 import { OrbSearch } from "@/components/OrbSearch"
 import { FluidOrb } from "@/components/FluidOrb"
 import { useSatelliteMotion } from "@/hooks/useSatelliteMotion"
-import {
-  type Project,
-} from "@/lib/portfolio"
+import type { Project } from "@/lib/projects/types"
 import { categories as navigationSlots, matchesCategory, parseCategory, type CategoryId } from "@/lib/orb-content"
 import type { PortfolioContent } from "@/lib/cms/types"
 import { resolveOrbLighting } from "@/lib/orb-lighting"

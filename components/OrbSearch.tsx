@@ -5,7 +5,7 @@ import { searchKindLabels, searchPortfolio, type SearchItem } from "@/lib/orb-co
 import type { PortfolioContent } from "@/lib/cms/types"
 import { useSearchResultSpace } from "@/hooks/useSearchResultSpace"
 import { useRouter } from "next/navigation"
-import type { Project } from "@/lib/portfolio"
+import type { Project } from "@/lib/projects/types"
 
 export function OrbSearch({ query, onQueryChange, onSelect, onOpenChange, projects, content }: { query: string; onQueryChange: (value: string) => void; onSelect: (item: SearchItem) => void; onOpenChange: (open: boolean) => void; projects: Project[]; content: PortfolioContent }) {
   const categories = content.categories

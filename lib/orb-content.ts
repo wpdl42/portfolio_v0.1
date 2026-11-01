@@ -1,6 +1,6 @@
 import type { Project } from "@/lib/projects/types"
 import type { PortfolioContent } from "@/lib/cms/types"
-import { getProjectDetail } from "@/lib/project-details"
+import { getProjectDetail } from "@/lib/projects/catalog"
 export type CategoryId = "projects" | "skills" | "journey" | "notes" | "about" | "contact"
 export type Category = { id: CategoryId; label: string; color: string; keywords: string[]; intro: string; summary: string }
 // Structural navigation defaults only. Published copy, ordering and colors come from MongoDB.
