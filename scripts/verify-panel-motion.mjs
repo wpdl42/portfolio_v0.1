@@ -28,6 +28,31 @@ async function dragHandle(distance, verify, touch) {
 
 const panelHeight = () => browser.evaluate('document.querySelector(".orb-sheet").getBoundingClientRect().height')
 
+async function assertDraggedClosed(category, previousView) {
+  const result = await browser.evaluate(`(async () => {
+    const root = document.querySelector('.orb-experience')
+    const panel = document.querySelector('.orb-sheet')
+    const samples = []
+    const started = performance.now()
+    await new Promise(resolve => {
+      function frame() {
+        if (!root.dataset.category || performance.now() - started > 1800) return resolve()
+        samples.push({ view: panel.dataset.view, height: panel.getBoundingClientRect().height })
+        requestAnimationFrame(frame)
+      }
+      frame()
+    })
+    return { samples, category: root.dataset.category, inert: panel.inert, query: location.search, dragHeight: panel.style.getPropertyValue('--sheet-drag-height') }
+  })()`)
+  assert.equal(result.category, undefined, `${category}: one downward gesture must close the panel`)
+  assert.equal(result.inert, true)
+  assert.equal(result.query, '')
+  assert.equal(result.dragHeight, '')
+  assert.ok(result.samples.every(sample => sample.view === previousView), `${category}: closing must not stop at a partial state`)
+  assert.ok(result.samples.every(sample => sample.height <= 62), `${category}: closing must not rebound to the full height`)
+  await browser.wait(`document.activeElement.id === 'category-${category}'`)
+}
+
 try {
   for (const width of [1440, 390]) {
     await browser.viewport(width, 900)
@@ -62,9 +87,22 @@ try {
       await browser.click('.orb-sheet-toggle')
       await pause(850)
       assert.ok(Math.abs(await panelHeight() - partial) < 2, `${category} ${width}: toggle expansion and collapse`)
-      await browser.click('.orb-sheet-close')
-      await browser.wait('!document.querySelector(".orb-experience").dataset.category')
-      console.log(`PASS panel motion: ${category} ${width}px, entry, live drag, expansion, collapse and close`)
+
+      await browser.click('.orb-sheet-toggle')
+      await pause(850)
+      await dragHandle(840, async () => {
+        assert.ok(Math.abs(await panelHeight() - 60) < 2, `${category} ${width}: the expanded panel can reach the bottom`)
+      }, width < 769)
+      await assertDraggedClosed(category, 'expanded')
+
+      await browser.click('#category-' + category)
+      await browser.wait('document.querySelector(".orb-sheet").dataset.view === "partial"')
+      await pause(850)
+      await dragHandle(partial - 60, async () => {
+        assert.ok(Math.abs(await panelHeight() - 60) < 2, `${category} ${width}: the partial panel can reach the bottom`)
+      }, width < 769)
+      await assertDraggedClosed(category, 'partial')
+      console.log(`PASS panel motion: ${category} ${width}px, live drag, middle snap, one-gesture close from both states, no rebound, URL/focus cleanup`)
     }
   }
   assert.deepEqual(browser.errors, [])

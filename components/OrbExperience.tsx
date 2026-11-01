@@ -88,6 +88,14 @@ export function OrbExperience({
   const [searchResultsOpen, setSearchResultsOpen] = useState(false)
   useSatelliteMotion(sceneRef, activeCategory, sheetState !== "expanded", searchResultsOpen, categories.map(category => category.id).join(","))
 
+  const resetDrag = useCallback(() => {
+    dragRef.current = null
+    if (sheetRef.current) {
+      delete sheetRef.current.dataset.dragging
+      sheetRef.current.style.removeProperty("--sheet-drag-height")
+    }
+  }, [])
+
   useEffect(() => {
     if (!initialActive) return
     const params = new URLSearchParams(location.search)
@@ -115,12 +123,13 @@ export function OrbExperience({
     if (!category) return
     closingCategoryRef.current = null
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    resetDrag()
     setActiveCategory(null)
     setIsClosing(false)
     setHoveredCategory(null)
     setFocusedCategory(null)
     restoreFocusRef.current = category
-  }, [])
+  }, [resetDrag])
 
   useEffect(() => {
     if (activeCategory || !restoreFocusRef.current) return
@@ -176,6 +185,7 @@ export function OrbExperience({
       }
       if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
       closingCategoryRef.current = null
+      resetDrag()
       setIsClosing(false)
       setActiveCategory(next)
       setFilter(category === "experiments" || params.get("filter") === "Experiments" ? "Experiments" : "All")
@@ -183,7 +193,7 @@ export function OrbExperience({
     }
     window.addEventListener("popstate", onPopState)
     return () => window.removeEventListener("popstate", onPopState)
-  }, [closeSheet])
+  }, [closeSheet, resetDrag])
 
   useEffect(
     () => () => {
@@ -218,6 +228,7 @@ export function OrbExperience({
     focusPanelRef.current = focusPanel
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
     closingCategoryRef.current = null
+    resetDrag()
     setIsClosing(false)
     setActiveCategory(category)
     setTargetProjectId(projectId)
@@ -258,7 +269,7 @@ export function OrbExperience({
     )
       return
     const height = Math.max(
-      180,
+      event.currentTarget.offsetHeight,
       Math.min(
         window.innerHeight,
         drag.startHeight - (event.clientY - drag.startY),
@@ -270,34 +281,36 @@ export function OrbExperience({
     }
   }
 
-  function resetDrag() {
-    dragRef.current = null
-    if (sheetRef.current) {
-      delete sheetRef.current.dataset.dragging
-      sheetRef.current.style.removeProperty("--sheet-drag-height")
-    }
-  }
-
   function endDrag(event: PointerEvent<HTMLButtonElement>) {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== event.pointerId) return
     dragRef.current = null
     const distance = event.clientY - drag.startY
     const velocity = distance / Math.max(event.timeStamp - drag.startTime, 1)
+    const remainingHeight = drag.startHeight - distance
+    if (sheetRef.current?.dataset.dragging) {
+      delete sheetRef.current.dataset.dragging
+      // Re-enable transitions at the released height before choosing the snap state.
+      sheetRef.current.getBoundingClientRect()
+    }
     if (Math.abs(distance) > 8) {
       suppressHandleClickRef.current = true
       window.setTimeout(() => {
         suppressHandleClickRef.current = false
       }, 350)
     }
-    if (distance < -65 || (velocity < -0.55 && distance < -25))
+    if (distance > 8 && remainingHeight <= window.innerHeight * .2)
+      closeSheet()
+    else if (distance < -65 || (velocity < -0.55 && distance < -25))
       changeSheet("expanded")
     else if (distance > 65 || (velocity > 0.55 && distance > 25)) {
       if (sheetState === "expanded") changeSheet("partial")
       else closeSheet()
     }
     requestAnimationFrame(() => {
-      if (!dragRef.current) resetDrag()
+      // Keep the small released height during exit so a full downward drag
+      // cannot jump back to the expanded height before disappearing.
+      if (!dragRef.current && !closingCategoryRef.current) resetDrag()
     })
   }
 
