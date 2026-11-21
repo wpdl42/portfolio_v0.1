@@ -10,7 +10,7 @@ export const categories: Category[] = [
   { id: "skills", label: "Skills", color: "#5a82ea", keywords: ["skills", "기술"], intro: "", summary: "" },
   { id: "notes", label: "Notes", color: "#7385a1", keywords: ["notes", "기록"], intro: "", summary: "" },
   { id: "about", label: "About", color: "#f28c58", keywords: ["about", "소개"], intro: "", summary: "" },
-  { id: "contact", label: "Contact", color: "#69b78a", keywords: ["contact", "연락"], intro: "", summary: "" },
+  { id: "contact", label: "Lounge", color: "#69b78a", keywords: ["contact", "lounge", "방명록", "게시판"], intro: "", summary: "" },
 ]
 export function parseCategory(value?: string | null): CategoryId | null {
   if (value === "learning") return "journey"
@@ -33,6 +33,8 @@ export function searchPortfolio(query: string, catalog: Project[] = [], content?
     ...(content?.skills ?? []).map((skill): SearchItem => ({ id: `skill-${skill.id}`, label: `${skill.name} 활용 경험`, category: "skills", kind: "skill", tags: [skill.name, skill.group], description: skill.description })),
     ...(content?.journey ?? []).map((item): SearchItem => ({ id: `journey-${item.id}`, label: item.title, category: "journey", kind: "learning", tags: [item.activityType, item.period], description: item.description })),
     ...(content?.about?.name ? [{ id: "about-me", label: content.about.name, category: "about" as const, kind: "page" as const, tags: ["소개", "profile"], description: `${content.about.lead} ${content.about.bio}` }] : []),
+    { id: "about-contact", label: "이메일 · GitHub · 블로그", category: "about", kind: "page", tags: ["연락", "email", "github", "blog"], description: "소개와 연락 링크를 확인합니다." },
+    { id: "guestbook", label: "Lounge", category: "contact", kind: "page", tags: ["게시판", "방명록", "contact", "대화", "guestbook", "chat"], description: "이야기를 읽고 닉네임으로 대화를 나눠보세요." },
     ...navigation.map((category): SearchItem => ({ id: category.id, label: category.label, category: category.id, kind: "category", tags: [category.id, ...category.keywords], description: category.intro })),
   ]
   const ranked = items.flatMap((item, order) => {

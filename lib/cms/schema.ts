@@ -6,7 +6,7 @@ export const canDeleteCmsKind = (kind: CmsKind) => deletableCmsKinds.includes(ki
 export type CmsField = { name: string; label: string; type?: "textarea" | "url" | "email" | "color" | "number" | "date" | "tags" | "lines" | "ids" | "links" | "select"; required?: boolean; max?: number; options?: string[]; initial?: string; hint?: string }
 const visibility: CmsField = { name: "visibility", label: "공개 여부", type: "select", options: ["private", "public"], initial: "private" }
 const order: CmsField = { name: "order", label: "표시 순서", type: "number", initial: "0" }
-export const cmsLabels: Record<CmsKind, string> = { projects: "Projects", skills: "Skills", journey: "Journey", notes: "Notes", about: "About", contact: "Contact", categories: "위성 표시 설정" }
+export const cmsLabels: Record<CmsKind, string> = { projects: "Projects", skills: "Skills", journey: "Journey", notes: "Notes", about: "About", contact: "About 연락 정보", categories: "위성 표시 설정" }
 export const cmsFields: Record<CmsKind, CmsField[]> = {
   projects: [
     { name: "title", label: "제목", required: true, max: 120 }, { name: "category", label: "분류", required: true, max: 120, initial: "Web" },

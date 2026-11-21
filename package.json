@@ -10,7 +10,9 @@
     "test:ui": "node scripts/verify-orb.mjs",
     "seed:reown": "node scripts/seed-reown.mjs",
     "migrate:content": "node scripts/migrate-content.mjs",
+    "migrate:lounge": "node scripts/migrate-lounge.mjs",
     "test:cms": "node scripts/verify-cms.mjs",
+    "test:guestbook": "node scripts/verify-guestbook.mjs",
     "test:cms-schema": "node --test --test-isolation=none scripts/tests/cms-schema.test.mjs"
   },
   "dependencies": {

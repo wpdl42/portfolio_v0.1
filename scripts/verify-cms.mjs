@@ -144,7 +144,7 @@ async function checkBrowser({project}) {
   await goto(`${base}/admin/contact`);assert.equal(await evaluate('document.querySelector("#cms-email").value'),'cms-editorial@example.com')
   const savedContact=(await list('contact'))[0].data
   assert.equal(savedContact.github,'https://example.com/edited-github');assert.equal(savedContact.blogLabel,'Edited Blog');assert.equal(savedContact.links[0].label,'More')
-  await goto(`${base}/?category=contact&view=partial`);await pause(800);assert.equal(await evaluate('document.querySelector(".orb-contact-type nav a").getAttribute("href")'),'https://example.com/edited-github')
+  await goto(`${base}/?category=about&view=partial`);await pause(800);assert.equal(await evaluate('document.querySelector(".orb-about-type nav a").getAttribute("href")'),'https://example.com/edited-github')
   await goto(`${base}/admin/about-sections`);await wait('location.pathname==="/admin/about" && !!document.querySelector("#cms-bio")')
   // Cancel must not write. A stale version must keep the text and offer reload.
   await goto(`${base}/admin/about`); const before=await db.collection('portfolio_content').findOne({_id:'about:main'})
@@ -177,8 +177,9 @@ async function checkBrowser({project}) {
   assert.ok(await evaluate('!!document.querySelector(".cms-home-tools")'))
   for(const category of ['projects','skills','journey','notes','about','contact']) {
     await goto(`${base}/?category=${category}&view=partial`); await wait(`document.querySelector('.orb-experience')?.dataset.category === '${category}'`); await pause(800)
-    const expected={projects:'CMS Browser Project',skills:'CMS Browser skill experience',journey:'CMS Browser journey',about:'Newer server biography',contact:'CMS Browser contact'}[category]
+    const expected={projects:'CMS Browser Project',skills:'CMS Browser skill experience',journey:'CMS Browser journey',about:'Newer server biography',contact:'이야기를 남겨주세요.'}[category]
     if(expected) assert.ok(await evaluate(`document.body.textContent.includes(${JSON.stringify(expected)})`),`Published content ${category}`)
+    if(category==='about') assert.ok(await evaluate('document.querySelector(".orb-about-type").textContent.includes("CMS Browser contact")'),'Contact edits must publish under About')
     if(category==='about'||category==='contact') { await wait('!!document.querySelector(".orb-editorial [role=dialog], .orb-editorial")'); await click('.orb-editorial-close') }
     else { await wait('!!document.querySelector(".orb-sheet .cms-edit-link")'); await click('.orb-sheet-close') }
     await wait('!new URLSearchParams(location.search).has("category")'); await pause(850)

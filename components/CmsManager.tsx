@@ -93,11 +93,11 @@ export function CmsManager({ kind, initialItems, expiresAt }: { kind: CmsKind; i
     finally { submitting.current = false; setBusy(false) }
   }
   const selectedTitle = selected ? String(selected.data.title ?? selected.data.name ?? selected.data.label ?? selected.key) : ""
-  const previewUrl = kind === "projects" && selected ? `/projects/${selected.key}` : kind === "notes" && selected ? `/notes/${String(selected.data.slug)}` : `/?category=${kind === "categories" ? "projects" : kind}&view=expanded`
+  const previewUrl = kind === "projects" && selected ? `/projects/${selected.key}` : kind === "notes" && selected ? `/notes/${String(selected.data.slug)}` : `/?category=${kind === "categories" ? "projects" : kind === "contact" ? "about" : kind}&view=expanded`
   const thumbnail = values.thumbnail
   return <div className="cms-admin">
     <header className="cms-admin-header"><div><p className="cms-eyebrow">PORTFOLIO CONTENT</p><h1>{cmsLabels[kind]} 관리</h1></div><div><Link href="/" onClick={navigate}>홈</Link><a href={previewUrl} target="_blank" rel="noreferrer">공개 화면 ↗</a><button type="button" disabled={busy} onClick={logout}>로그아웃</button></div></header>
-    <nav className="cms-admin-nav" aria-label="콘텐츠 종류">{cmsNavigation.map(section => <Link key={section} href={`/admin/${section}`} aria-current={kind === section ? "page" : undefined} onClick={navigate}>{cmsLabels[section]}</Link>)}<Link href="/admin/trash" onClick={navigate}>휴지통</Link></nav>
+    <nav className="cms-admin-nav" aria-label="콘텐츠 종류">{cmsNavigation.map(section => <Link key={section} href={`/admin/${section}`} aria-current={kind === section ? "page" : undefined} onClick={navigate}>{cmsLabels[section]}</Link>)}<Link href="/admin/lounge" onClick={navigate}>Lounge</Link><Link href="/admin/trash" onClick={navigate}>휴지통</Link></nav>
     {expired && <p className="cms-alert" role="alert">관리자 세션이 만료되었습니다. 입력 내용은 유지됩니다. <a href={`/admin/login?returnTo=/admin/${kind}`} target="_blank" rel="noreferrer">새 탭에서 다시 로그인 ↗</a> 후 저장을 다시 눌러 주세요.</p>}
     <div className="cms-admin-grid"><aside className="cms-items" aria-label="편집 항목">
       {!singleton && <button type="button" className="cms-add" disabled={busy} onClick={() => choose(null)}>+ 새 항목 추가</button>}

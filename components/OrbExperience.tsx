@@ -16,6 +16,7 @@ import { OrbEditorialPanel } from "@/components/OrbEditorialPanel"
 import { OrbSearch } from "@/components/OrbSearch"
 import { FluidOrb } from "@/components/FluidOrb"
 import { useSatelliteMotion } from "@/hooks/useSatelliteMotion"
+import { loungeCloseEvent } from "@/hooks/useLoungeNavigationGuard"
 import type { Project } from "@/lib/projects/types"
 import {
   categories as navigationSlots,
@@ -200,6 +201,7 @@ export function OrbExperience({
   const closeSheet = useCallback(
     (updateHistory = true) => {
       if (!activeCategory || closingCategoryRef.current) return
+      if (activeCategory === "contact" && !window.dispatchEvent(new Event(loungeCloseEvent, { cancelable: true }))) return
       closingCategoryRef.current = activeCategory
       setClosingView(sheetState)
       setIsClosing(true)
@@ -454,7 +456,7 @@ export function OrbExperience({
       data-category={activeCategory ?? undefined}
       data-closing={isClosing || undefined}
       onKeyDown={(event) => {
-        if (event.key === "Escape" && sheetState !== "closed") {
+        if (event.key === "Escape" && !event.defaultPrevented && sheetState !== "closed") {
           event.preventDefault()
           closeSheet()
         }

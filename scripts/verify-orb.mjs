@@ -1050,7 +1050,7 @@ async function checkCategoryModes() {
     for(const category of ['projects','skills','journey','notes','about','contact']) {
       console.log('CHECK category',category,width)
       await navigate()
-      assert.deepEqual(await evaluate('[...document.querySelectorAll(".orb-node")].map(n=>n.textContent.trim()).sort()'),['Projects','Skills','Journey','Notes','About','Contact'].sort())
+      assert.deepEqual(await evaluate('[...document.querySelectorAll(".orb-node")].map(n=>n.textContent.trim()).sort()'),['Projects','Skills','Journey','Notes','About','Lounge'].sort())
       await realClick(`#category-${category}`)
       await waitFor(`document.querySelector('.orb-experience').dataset.category === '${category}'`)
       await pause(850)
@@ -1062,18 +1062,20 @@ async function checkCategoryModes() {
         assert.equal(await evaluate('document.querySelector(".orb-sheet").inert'),true)
         assert.equal(await evaluate('document.activeElement.id'),'orb-editorial-title')
         for(let i=0;i<6;i++) { await press('Tab'); assert.equal(await evaluate('!!document.activeElement.closest(".orb-editorial")'),true) }
-        if(category==='contact') {
+        if(category==='about') {
           assert.equal(await evaluate('getComputedStyle(document.querySelector(".orb-scene")).filter'),'blur(5px)')
-          assert.match(await evaluate('document.querySelector(".orb-contact-type").textContent'),/이메일.*등록 예정/)
-          assert.equal(await evaluate('document.querySelectorAll(".orb-contact-type a[target=_blank]").length'),2)
+          assert.ok(await evaluate('!!document.querySelector(".orb-about-email")'))
+          assert.ok(await evaluate('document.querySelectorAll(".orb-about-type nav a[target=_blank]").length') >= 1)
           assert.equal(await evaluate('document.querySelector(".orb-fluid").dataset.renderState'),'running')
           assert.equal(await evaluate('document.querySelector(".orb-fluid").dataset.proximity'),'false')
-          await realClick('.orb-contact-intro')
+          await realClick('.orb-about-lead')
           assert.equal(await evaluate('document.querySelector(".orb-editorial").dataset.open'),'true')
         } else {
           const panelWidth=await evaluate('document.querySelector(".orb-editorial-content").getBoundingClientRect().width')
-          assert.ok(width===390?Math.abs(panelWidth-390)<1:panelWidth/width>.45&&panelWidth/width<.55)
-          assert.equal(await evaluate('getComputedStyle(document.querySelector(".orb-scene")).filter'),'none')
+          assert.ok(Math.abs(panelWidth-width)<1)
+          assert.ok(await evaluate('!!document.querySelector(".orb-guestbook")'))
+          assert.equal(await evaluate('document.querySelectorAll(".orb-guestbook a[href^=mailto],.orb-guestbook nav a[target=_blank]").length'),0)
+          assert.equal(await evaluate('getComputedStyle(document.querySelector(".orb-scene")).filter'),'blur(5px)')
           if(width===390) {
             await evaluate('document.querySelector(".orb-editorial-content").scrollTop=500;true')
             assert.ok(await evaluate('document.querySelector(".orb-editorial-close").getBoundingClientRect().top')>=0)
@@ -1129,7 +1131,7 @@ async function checkCategoryModes() {
   await navigate()
   await typeSearch('java')
   assert.equal(await evaluate('document.querySelector("[role=option]").id'),'result-project-2')
-  await navigate('?category=about&view=partial')
+  await navigate('?category=contact&view=partial')
   await pause(750)
   await realClick('.orb-editorial-dim',.1,.5)
   await waitFor('!document.querySelector(".orb-experience").dataset.category')
@@ -1149,12 +1151,12 @@ async function checkCategoryModes() {
   await click('.orb-detail-back')
   await waitFor('document.querySelector(".orb-experience")?.dataset.category === "notes"')
   await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]})
-  await navigate('?category=contact&view=partial')
-  assert.equal(await evaluate('getComputedStyle(document.querySelector(".orb-contact-type")).animationName'),'none')
+  await navigate('?category=about&view=partial')
+  assert.equal(await evaluate('getComputedStyle(document.querySelector(".orb-about-type")).animationName'),'none')
   await press('Escape')
   await waitFor('!document.querySelector(".orb-editorial")')
   await send('Emulation.setEmulatedMedia',{features:[]})
-  console.log('PASS six category modes: desktop/mobile open+close, focus trap/restore, Contact blur+live Orb+links, About side panel+backdrop, grouped skills, timeline, projects/notes expand+detail+return/scroll, legacy aliases, rapid switches, search/java ranking, direct URLs, history and reduced motion')
+  console.log('PASS six category modes: desktop/mobile open+close, focus trap/restore, About links, Lounge blur+guestbook+backdrop, grouped skills, timeline, projects/notes expand+detail+return/scroll, legacy aliases, rapid switches, search/java ranking, direct URLs, history and reduced motion')
 }
 
 async function checkExchangeProject() {

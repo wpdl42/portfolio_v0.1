@@ -9,7 +9,7 @@ export async function openTestBrowser() {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'portfolio-cms-browser-'))
   const browser = spawn(process.env.CHROME_PATH ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', ['--headless=new', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { windowsHide: true, stdio: 'ignore' })
   let socket, sequence = 0
-  const pending = new Map(), errors = []
+  const pending = new Map(), errors = [], dialogs = []
   try {
     let port
     for (let i = 0; i < 150; i++) {
@@ -22,6 +22,7 @@ export async function openTestBrowser() {
     socket.onmessage = ({ data }) => {
       const message = JSON.parse(data)
       if (message.method === 'Runtime.exceptionThrown') errors.push(message.params.exceptionDetails.exception?.description ?? message.params.exceptionDetails.text)
+      if (message.method === 'Page.javascriptDialogOpening') dialogs.push({ type: message.params.type, message: message.params.message })
       if (!pending.has(message.id)) return
       const { resolve, reject } = pending.get(message.id); pending.delete(message.id)
       if (message.error) reject(new Error(message.error.message)); else resolve(message.result)
@@ -49,7 +50,7 @@ export async function openTestBrowser() {
       await send('Input.dispatchKeyEvent', { type:'keyUp', key, code:key, windowsVirtualKeyCode:codes[key] })
     }
     await send('Page.enable'); await send('Runtime.enable'); await send('Emulation.setFocusEmulationEnabled', { enabled:true }); await viewport(1440)
-    return { send, evaluate, wait, viewport, goto, click, fill, press, errors, close: async () => {
+    return { send, evaluate, wait, viewport, goto, click, fill, press, errors, dialogs, close: async () => {
       if (socket?.readyState === WebSocket.OPEN) { socket.send(JSON.stringify({ id:++sequence, method:'Browser.close' })); await pause(400); socket.close() }
       if (browser.exitCode === null) browser.kill()
       const resolved = path.resolve(profile)
