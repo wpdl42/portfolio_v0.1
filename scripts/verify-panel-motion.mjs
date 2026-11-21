@@ -28,6 +28,14 @@ async function dragHandle(distance, verify, touch) {
 
 const panelHeight = () => browser.evaluate('document.querySelector(".orb-sheet").getBoundingClientRect().height')
 
+async function wheelPanel(deltaY) {
+  const point = await browser.evaluate(`(() => {
+    const scroll = document.querySelector('.orb-sheet-scroll').getBoundingClientRect()
+    return { x: scroll.x + scroll.width / 2, y: scroll.y + scroll.height / 2 }
+  })()`)
+  await browser.send('Input.dispatchMouseEvent', { type: 'mouseWheel', ...point, deltaX: 0, deltaY })
+}
+
 async function assertDraggedClosed(category, previousView) {
   const result = await browser.evaluate(`(async () => {
     const root = document.querySelector('.orb-experience')
@@ -67,6 +75,22 @@ try {
       const expected = (category === 'skills' || category === 'journey' ? .67 : width < 769 ? .57 : .52) * 900
       assert.ok(Math.abs(partial - expected) < 2, `${category} ${width}: partial layout is preserved`)
 
+      if (category === 'projects' && width === 1440) {
+        await wheelPanel(90)
+        await browser.wait('document.querySelector(".orb-sheet").dataset.view === "expanded"')
+        await pause(850)
+        await browser.evaluate('document.querySelector(".orb-sheet-scroll").scrollTop = 180')
+        await wheelPanel(-80)
+        await pause(150)
+        assert.equal(await browser.evaluate('document.querySelector(".orb-sheet").dataset.view'), 'expanded', 'wheel-up must preserve expanded state while content can still scroll')
+        assert.ok(await browser.evaluate('document.querySelector(".orb-sheet-scroll").scrollTop') < 180, 'wheel-up must scroll expanded content before collapsing')
+        await browser.evaluate('document.querySelector(".orb-sheet-scroll").scrollTop = 0')
+        await wheelPanel(-90)
+        await browser.wait('document.querySelector(".orb-sheet").dataset.view === "partial"')
+        await pause(850)
+        assert.ok(Math.abs(await panelHeight() - partial) < 2, 'wheel-up at the top collapses to the original partial height')
+      }
+
       await dragHandle(-110, async () => {
         assert.ok(Math.abs(await panelHeight() - partial - 110) < 2, `${category} ${width}: the panel must follow the upward drag`)
       }, width < 769)
@@ -102,7 +126,29 @@ try {
         assert.ok(Math.abs(await panelHeight() - 60) < 2, `${category} ${width}: the partial panel can reach the bottom`)
       }, width < 769)
       await assertDraggedClosed(category, 'partial')
-      console.log(`PASS panel motion: ${category} ${width}px, live drag, middle snap, one-gesture close from both states, no rebound, URL/focus cleanup`)
+
+      await browser.click('#category-' + category)
+      await pause(850)
+      await wheelPanel(90)
+      await browser.wait('document.querySelector(".orb-sheet").dataset.view === "expanded"')
+      await pause(850)
+      await browser.evaluate('document.querySelector(".orb-sheet-scroll").scrollTop = 0')
+      await wheelPanel(-90)
+      await browser.wait('document.querySelector(".orb-sheet").dataset.view === "partial"')
+      // Continued trackpad momentum must not turn a collapse into a close.
+      for (let i = 0; i < 9; i++) {
+        await pause(100)
+        await wheelPanel(-30)
+      }
+      assert.equal(await browser.evaluate('document.querySelector(".orb-experience").dataset.category'), category)
+      assert.equal(await browser.evaluate('document.querySelector(".orb-sheet").dataset.view'), 'partial')
+      await pause(300)
+      await wheelPanel(-90)
+      await browser.wait('!document.querySelector(".orb-experience").dataset.category')
+      assert.equal(await browser.evaluate('location.search'), '')
+      assert.equal(await browser.evaluate('document.querySelector(".orb-sheet").inert'), true)
+      await browser.wait(`document.activeElement.id === 'category-${category}'`)
+      console.log(`PASS panel motion: ${category} ${width}px, drag/snap/close, wheel expand/collapse/close, momentum guard, URL/focus cleanup`)
     }
   }
   assert.deepEqual(browser.errors, [])

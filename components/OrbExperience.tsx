@@ -10,7 +10,6 @@ import {
   useState,
   type CSSProperties,
   type PointerEvent,
-  type WheelEvent,
 } from "react"
 import { CategoryContent } from "@/components/CategoryContent"
 import { OrbEditorialPanel } from "@/components/OrbEditorialPanel"
@@ -18,7 +17,12 @@ import { OrbSearch } from "@/components/OrbSearch"
 import { FluidOrb } from "@/components/FluidOrb"
 import { useSatelliteMotion } from "@/hooks/useSatelliteMotion"
 import type { Project } from "@/lib/projects/types"
-import { categories as navigationSlots, matchesCategory, parseCategory, type CategoryId } from "@/lib/orb-content"
+import {
+  categories as navigationSlots,
+  matchesCategory,
+  parseCategory,
+  type CategoryId,
+} from "@/lib/orb-content"
 import type { PortfolioContent } from "@/lib/cms/types"
 import { resolveOrbLighting } from "@/lib/orb-lighting"
 import { matchesProjectFilter, projectFilters } from "@/lib/projects/filters"
@@ -62,16 +66,34 @@ export function OrbExperience({
   )
   const editorial = activeCategory === "about" || activeCategory === "contact"
   const interactionCategory =
-    sheetState === "expanded" || editorial ? null : (hoveredCategory ?? focusedCategory)
+    sheetState === "expanded" || editorial
+      ? null
+      : (hoveredCategory ?? focusedCategory)
   const lighting = useMemo(
-    () => resolveOrbLighting(interactionCategory, activeCategory, searchQuery, projects, content),
+    () =>
+      resolveOrbLighting(
+        interactionCategory,
+        activeCategory,
+        searchQuery,
+        projects,
+        content,
+      ),
     [interactionCategory, activeCategory, searchQuery, projects, content],
   )
   const [targetProjectId, setTargetProjectId] = useState<number | null>(null)
-  const [filter, setFilter] = useState(initialCategory === "experiments" ? "Experiments" : "All")
+  const [filter, setFilter] = useState(
+    initialCategory === "experiments" ? "Experiments" : "All",
+  )
   const [sort, setSort] = useState("Latest")
   const sheetRef = useRef<HTMLElement>(null)
   const sheetScrollRef = useRef<HTMLDivElement>(null)
+  const wheelGestureRef = useRef({
+    lastTime: 0,
+    direction: 0,
+    distance: 0,
+    consumed: false,
+    blockedUntil: 0,
+  })
   const dragRef = useRef<{
     startY: number
     startTime: number
@@ -86,7 +108,13 @@ export function OrbExperience({
   const focusPanelRef = useRef(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const [searchResultsOpen, setSearchResultsOpen] = useState(false)
-  useSatelliteMotion(sceneRef, activeCategory, sheetState !== "expanded", searchResultsOpen, categories.map(category => category.id).join(","))
+  useSatelliteMotion(
+    sceneRef,
+    activeCategory,
+    sheetState !== "expanded",
+    searchResultsOpen,
+    categories.map((category) => category.id).join(","),
+  )
 
   const resetDrag = useCallback(() => {
     dragRef.current = null
@@ -106,14 +134,25 @@ export function OrbExperience({
     }
     const timer = window.setTimeout(() => {
       try {
-        const saved = JSON.parse(sessionStorage.getItem("orb-explore-return") ?? "null")
-        if (saved?.category === initialActive && saved.url === location.pathname + location.search) {
+        const saved = JSON.parse(
+          sessionStorage.getItem("orb-explore-return") ?? "null",
+        )
+        if (
+          saved?.category === initialActive &&
+          saved.url === location.pathname + location.search
+        ) {
           setFilter(saved.filter ?? "All")
           setSort(saved.sort ?? "Latest")
           setTargetProjectId(saved.projectId ?? null)
-          requestAnimationFrame(() => { if (sheetScrollRef.current) sheetScrollRef.current.scrollTop = saved.scrollTop ?? 0 })
-        } else if (params.get("filter") === "Experiments") setFilter("Experiments")
-      } catch { /* Navigation works without browser storage. */ }
+          requestAnimationFrame(() => {
+            if (sheetScrollRef.current)
+              sheetScrollRef.current.scrollTop = saved.scrollTop ?? 0
+          })
+        } else if (params.get("filter") === "Experiments")
+          setFilter("Experiments")
+      } catch {
+        /* Navigation works without browser storage. */
+      }
     }, 0)
     return () => clearTimeout(timer)
   }, [initialActive, initialCategory])
@@ -135,14 +174,26 @@ export function OrbExperience({
     if (activeCategory || !restoreFocusRef.current) return
     const category = restoreFocusRef.current
     restoreFocusRef.current = null
-    const frame = requestAnimationFrame(() => document.getElementById(`category-${category}`)?.focus({ preventScroll: true }))
+    const frame = requestAnimationFrame(() =>
+      document
+        .getElementById(`category-${category}`)
+        ?.focus({ preventScroll: true }),
+    )
     return () => cancelAnimationFrame(frame)
   }, [activeCategory])
 
   useEffect(() => {
-    if (!activeCategory || editorial || sheetState === "closed" || !focusPanelRef.current) return
+    if (
+      !activeCategory ||
+      editorial ||
+      sheetState === "closed" ||
+      !focusPanelRef.current
+    )
+      return
     focusPanelRef.current = false
-    const frame = requestAnimationFrame(() => headingRef.current?.focus({ preventScroll: true }))
+    const frame = requestAnimationFrame(() =>
+      headingRef.current?.focus({ preventScroll: true }),
+    )
     return () => cancelAnimationFrame(frame)
   }, [activeCategory, editorial, sheetState])
 
@@ -165,7 +216,12 @@ export function OrbExperience({
 
   useEffect(() => {
     const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !event.defaultPrevented && activeCategory && sheetState !== "closed") {
+      if (
+        event.key === "Escape" &&
+        !event.defaultPrevented &&
+        activeCategory &&
+        sheetState !== "closed"
+      ) {
         event.preventDefault()
         closeSheet()
       }
@@ -188,7 +244,11 @@ export function OrbExperience({
       resetDrag()
       setIsClosing(false)
       setActiveCategory(next)
-      setFilter(category === "experiments" || params.get("filter") === "Experiments" ? "Experiments" : "All")
+      setFilter(
+        category === "experiments" || params.get("filter") === "Experiments"
+          ? "Experiments"
+          : "All",
+      )
       setSheetState(params.get("view") === "expanded" ? "expanded" : "partial")
     }
     window.addEventListener("popstate", onPopState)
@@ -202,21 +262,21 @@ export function OrbExperience({
     [],
   )
 
-  function setUrl(
-    category: CategoryId | null,
-    view: SheetState,
-    replace = false,
-  ) {
-    const params = new URLSearchParams()
-    if (category) {
-      params.set("category", category)
-      params.set("view", view)
-      if (category === "projects" && filter === "Experiments") params.set("filter", "Experiments")
-    }
-    const url = category ? `/?${params}` : "/"
-    if (window.location.pathname + window.location.search === url) return
-    window.history[replace ? "replaceState" : "pushState"](null, "", url)
-  }
+  const setUrl = useCallback(
+    (category: CategoryId | null, view: SheetState, replace = false) => {
+      const params = new URLSearchParams()
+      if (category) {
+        params.set("category", category)
+        params.set("view", view)
+        if (category === "projects" && filter === "Experiments")
+          params.set("filter", "Experiments")
+      }
+      const url = category ? `/?${params}` : "/"
+      if (window.location.pathname + window.location.search === url) return
+      window.history[replace ? "replaceState" : "pushState"](null, "", url)
+    },
+    [filter],
+  )
 
   function openCategory(
     category: CategoryId,
@@ -237,17 +297,26 @@ export function OrbExperience({
     setFilter(nextFilter)
     sheetScrollRef.current?.scrollTo({ top: 0 })
     setUrl(category, "partial")
-    if (nextFilter === "Experiments") window.history.replaceState(null, "", `/?category=projects&view=partial&filter=Experiments`)
-    else if (category === "projects") window.history.replaceState(null, "", "/?category=projects&view=partial")
+    if (nextFilter === "Experiments")
+      window.history.replaceState(
+        null,
+        "",
+        `/?category=projects&view=partial&filter=Experiments`,
+      )
+    else if (category === "projects")
+      window.history.replaceState(null, "", "/?category=projects&view=partial")
   }
 
-  function changeSheet(next: SheetState) {
-    if (!activeCategory) return
-    setSheetState(next)
-    setUrl(activeCategory, next, true)
-    if (next === "partial")
-      sheetScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })
-  }
+  const changeSheet = useCallback(
+    (next: SheetState) => {
+      if (!activeCategory) return
+      setSheetState(next)
+      setUrl(activeCategory, next, true)
+      if (next === "partial")
+        sheetScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+    },
+    [activeCategory, setUrl],
+  )
 
   function startDrag(event: PointerEvent<HTMLButtonElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) return
@@ -299,7 +368,7 @@ export function OrbExperience({
         suppressHandleClickRef.current = false
       }, 350)
     }
-    if (distance > 8 && remainingHeight <= window.innerHeight * .2)
+    if (distance > 8 && remainingHeight <= window.innerHeight * 0.2)
       closeSheet()
     else if (distance < -65 || (velocity < -0.55 && distance < -25))
       changeSheet("expanded")
@@ -314,21 +383,70 @@ export function OrbExperience({
     })
   }
 
-  function onSheetWheel(event: WheelEvent<HTMLElement>) {
-    if (sheetState === "partial" && event.deltaY > 12) {
+  useEffect(() => {
+    const sheet = sheetRef.current
+    if (!sheet || !activeCategory || editorial || sheetState === "closed")
+      return
+
+    const onWheel = (event: WheelEvent) => {
+      if (
+        event.ctrlKey ||
+        Math.abs(event.deltaX) > Math.abs(event.deltaY) ||
+        !event.deltaY ||
+        dragRef.current
+      )
+        return
+      const now = performance.now()
+      const gesture = wheelGestureRef.current
+      const direction = Math.sign(event.deltaY)
+      if (now - gesture.lastTime > 200 || direction !== gesture.direction) {
+        gesture.distance = 0
+        gesture.consumed = false
+      }
+      gesture.lastTime = now
+      gesture.direction = direction
+
+      // Let inner content scroll normally before moving the sheet itself.
+      if (direction < 0 && (sheetScrollRef.current?.scrollTop ?? 0) > 1) {
+        gesture.distance = 0
+        return
+      }
+      if (direction > 0 && sheetState === "expanded") return
+
       event.preventDefault()
-      changeSheet("expanded")
+      // A trackpad's momentum belongs to the same gesture, even after a snap.
+      if (gesture.consumed || now < gesture.blockedUntil) return
+      const unit =
+        event.deltaMode === 1
+          ? 16
+          : event.deltaMode === 2
+            ? sheet.clientHeight
+            : 1
+      gesture.distance += Math.abs(event.deltaY) * unit
+      if (gesture.distance < 24) return
+      gesture.consumed = true
+      gesture.blockedUntil = now + 730
+      if (direction > 0) changeSheet("expanded")
+      else if (sheetState === "expanded") changeSheet("partial")
+      else closeSheet()
     }
-  }
+
+    // React delegates wheel listeners passively; this listener must consume a snap.
+    sheet.addEventListener("wheel", onWheel, { passive: false })
+    return () => sheet.removeEventListener("wheel", onWheel)
+  }, [activeCategory, editorial, sheetState, changeSheet, closeSheet])
 
   const selected = categories.find((category) => category.id === activeCategory)
   const displayedView = isClosing ? closingView : sheetState
   const filteredProjects = useMemo(
-    () => projects.filter(project => matchesProjectFilter(project, filter)),
+    () => projects.filter((project) => matchesProjectFilter(project, filter)),
     [projects, filter],
   )
-  const visibleProjects =
-    useMemo(() => sort === "Oldest" ? [...filteredProjects].reverse() : filteredProjects, [sort, filteredProjects])
+  const visibleProjects = useMemo(
+    () =>
+      sort === "Oldest" ? [...filteredProjects].reverse() : filteredProjects,
+    [sort, filteredProjects],
+  )
 
   return (
     <div
@@ -389,7 +507,11 @@ export function OrbExperience({
           <i />
         </div>
         <div className="orb-sphere" aria-hidden="true">
-          <FluidOrb active={editorial || sheetState !== "expanded"} interactive={!editorial} lighting={lighting} />
+          <FluidOrb
+            active={editorial || sheetState !== "expanded"}
+            interactive={!editorial}
+            lighting={lighting}
+          />
         </div>
         {categories.map((category, slot) => (
           <button
@@ -399,7 +521,8 @@ export function OrbExperience({
             className={`orb-node orb-node-${navigationSlots[slot].id}`}
             aria-pressed={activeCategory === category.id}
             data-glowing={
-              sheetState === "closed" && matchesCategory(searchQuery, category, projects, content)
+              sheetState === "closed" &&
+              matchesCategory(searchQuery, category, projects, content)
                 ? "true"
                 : undefined
             }
@@ -449,9 +572,24 @@ export function OrbExperience({
           onQueryChange={setSearchQuery}
           onSelect={(result) => {
             if (result.noteId) {
-              try { sessionStorage.setItem("orb-explore-return", JSON.stringify({ category: "notes", url: "/?category=notes&view=expanded", scrollTop: 0 })) } catch {}
+              try {
+                sessionStorage.setItem(
+                  "orb-explore-return",
+                  JSON.stringify({
+                    category: "notes",
+                    url: "/?category=notes&view=expanded",
+                    scrollTop: 0,
+                  }),
+                )
+              } catch {}
               router.push(`/notes/${result.noteId}`)
-            } else openCategory(result.category, result.projectId ?? null, true, result.kind === "experiment" ? "Experiments" : "All")
+            } else
+              openCategory(
+                result.category,
+                result.projectId ?? null,
+                true,
+                result.kind === "experiment" ? "Experiments" : "All",
+              )
           }}
         />
       </div>
@@ -465,12 +603,29 @@ export function OrbExperience({
         aria-hidden={sheetState === "closed" || editorial}
         inert={sheetState === "closed" || editorial}
         onClickCapture={(event) => {
-          const anchor = (event.target as Element).closest<HTMLAnchorElement>('a[href^="/projects/"],a[href^="/notes/"]')
+          const anchor = (event.target as Element).closest<HTMLAnchorElement>(
+            'a[href^="/projects/"],a[href^="/notes/"]',
+          )
           if (!anchor) return
-          const firstVisible = sheetRef.current?.querySelector<HTMLAnchorElement>('.featured-track .project-card[aria-hidden="false"]')
-          try { sessionStorage.setItem("orb-explore-return", JSON.stringify({ category: activeCategory, url: location.pathname + location.search, filter, sort, scrollTop: sheetScrollRef.current?.scrollTop ?? 0, projectId: Number(firstVisible?.pathname.split("/").pop()) || null })) } catch {}
+          const firstVisible =
+            sheetRef.current?.querySelector<HTMLAnchorElement>(
+              '.featured-track .project-card[aria-hidden="false"]',
+            )
+          try {
+            sessionStorage.setItem(
+              "orb-explore-return",
+              JSON.stringify({
+                category: activeCategory,
+                url: location.pathname + location.search,
+                filter,
+                sort,
+                scrollTop: sheetScrollRef.current?.scrollTop ?? 0,
+                projectId:
+                  Number(firstVisible?.pathname.split("/").pop()) || null,
+              }),
+            )
+          } catch {}
         }}
-        onWheel={onSheetWheel}
         onTransitionEnd={(event) => {
           if (
             event.target === event.currentTarget &&
@@ -506,12 +661,24 @@ export function OrbExperience({
                   <h1 id="orb-sheet-title" ref={headingRef} tabIndex={-1}>
                     {selected?.label}
                   </h1>
-                  {(activeCategory === "projects" || activeCategory === "notes") && <span>
-                    {activeCategory === "projects"
-                      ? `${projects.filter(project => project.kind !== "experiment").length} Projects`
-                      : activeCategory === "notes" ? "Notes archive" : ""}
-                  </span>}
-                  {isAdmin && activeCategory && !editorial && <Link className="cms-edit-link" href={`/admin/${activeCategory}`}>편집</Link>}
+                  {(activeCategory === "projects" ||
+                    activeCategory === "notes") && (
+                    <span>
+                      {activeCategory === "projects"
+                        ? `${projects.filter((project) => project.kind !== "experiment").length} Projects`
+                        : activeCategory === "notes"
+                          ? "Notes archive"
+                          : ""}
+                    </span>
+                  )}
+                  {isAdmin && activeCategory && !editorial && (
+                    <Link
+                      className="cms-edit-link"
+                      href={`/admin/${activeCategory}`}
+                    >
+                      편집
+                    </Link>
+                  )}
                 </div>
                 <p>{selected?.intro}</p>
               </div>
@@ -546,8 +713,8 @@ export function OrbExperience({
                     value={sort}
                     onChange={(event) => setSort(event.target.value)}
                   >
-                    <option value="Latest">최신순</option>
-                    <option value="Oldest">오래된 순</option>
+                    <option value="Latest">오래된 순</option>
+                    <option value="Oldest">최신순</option>
                   </select>
                 </label>
               </div>
@@ -587,9 +754,31 @@ export function OrbExperience({
           </button>
         </div>
       </section>
-      {isAdmin && sheetState === "closed" && <nav className="cms-home-tools" aria-label="관리자 도구"><Link href="/admin/categories">위성 설정</Link><Link href="/admin/projects">콘텐츠 관리</Link></nav>}
-      {content.status !== "ready" && <p className="cms-load-notice" role="status">{content.status === "unavailable" ? "콘텐츠를 불러오지 못했습니다." : "콘텐츠 초기 이전이 필요합니다."} <button type="button" onClick={() => router.refresh()}>다시 불러오기</button></p>}
-      {editorial && <OrbEditorialPanel category={activeCategory as "about" | "contact"} content={content} isAdmin={isAdmin} open={sheetState !== "closed"} onClose={() => closeSheet()} />}
+      {isAdmin && sheetState === "closed" && (
+        <nav className="cms-home-tools" aria-label="관리자 도구">
+          <Link href="/admin/categories">위성 설정</Link>
+          <Link href="/admin/projects">콘텐츠 관리</Link>
+        </nav>
+      )}
+      {content.status !== "ready" && (
+        <p className="cms-load-notice" role="status">
+          {content.status === "unavailable"
+            ? "콘텐츠를 불러오지 못했습니다."
+            : "콘텐츠 초기 이전이 필요합니다."}{" "}
+          <button type="button" onClick={() => router.refresh()}>
+            다시 불러오기
+          </button>
+        </p>
+      )}
+      {editorial && (
+        <OrbEditorialPanel
+          category={activeCategory as "about" | "contact"}
+          content={content}
+          isAdmin={isAdmin}
+          open={sheetState !== "closed"}
+          onClose={() => closeSheet()}
+        />
+      )}
     </div>
   )
 }

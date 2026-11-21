@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useCallback, useEffect, useRef, type KeyboardEvent, type PointerEvent, type TransitionEvent } from "react"
+import { useCallback, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type TransitionEvent } from "react"
 import type { Project } from "@/lib/projects/types"
 import { getProjectDetail } from "@/lib/projects/catalog"
 import { ProjectArtwork } from "@/components/ProjectArtwork"
@@ -23,6 +23,8 @@ export function FeaturedProjectsCarousel({ projects, expanded = false, initialPr
   const dragRef = useRef<DragState | null>(null)
   const inertiaRef = useRef<number | null>(null)
   const suppressClickRef = useRef(false)
+  const [loopEnabled, setLoopEnabled] = useState(false)
+  const looping = !expanded && loopEnabled
 
   const moveTo = useCallback((position: number, animate: boolean) => {
     const track = trackRef.current
@@ -38,28 +40,36 @@ export function FeaturedProjectsCarousel({ projects, expanded = false, initialPr
     if (!viewport || !track) return
 
     const bounds = viewport.getBoundingClientRect()
-    for (const [index, wrapper] of Array.from(track.children).entries()) {
+    for (const wrapper of Array.from(track.children)) {
       const card = wrapper.querySelector<HTMLElement>(".project-card")!
       const rect = card.getBoundingClientRect()
-      const hidden = expanded ? index < projects.length || index >= projects.length * 2 : rect.right <= bounds.left || rect.left >= bounds.right
+      const hidden = !expanded && (rect.right <= bounds.left || rect.left >= bounds.right)
       card.setAttribute("aria-hidden", hidden ? "true" : "false")
       card.setAttribute("tabindex", hidden ? "-1" : "0")
       wrapper.setAttribute("aria-hidden", hidden ? "true" : "false")
       wrapper.querySelector(".project-visit-link")?.setAttribute("tabindex", hidden ? "-1" : "0")
     }
-  }, [expanded, projects.length])
+  }, [expanded])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const viewport = viewportRef.current
     const track = trackRef.current
     if (!viewport || !track) return
 
     const measure = () => {
-      indexRef.current = projects.length + Math.max(0, projects.findIndex((project) => project.id === initialProjectId))
       const card = track.querySelector<HTMLElement>(".project-card")
       if (!card) return
 
-      strideRef.current = card.getBoundingClientRect().width + parseFloat(getComputedStyle(track).gap)
+      const gap = parseFloat(getComputedStyle(track).gap)
+      strideRef.current = card.getBoundingClientRect().width + gap
+      const viewportStyle = getComputedStyle(viewport)
+      const availableWidth = viewport.clientWidth - parseFloat(viewportStyle.paddingLeft) - parseFloat(viewportStyle.paddingRight)
+      const nextLooping = !expanded && projects.length * strideRef.current - gap > availableWidth + 1
+      if (nextLooping !== looping) {
+        setLoopEnabled(nextLooping)
+        return
+      }
+      indexRef.current = looping ? projects.length + Math.max(0, projects.findIndex((project) => project.id === initialProjectId)) : 0
       moveTo(indexRef.current * strideRef.current, false)
       updateVisibleCards()
     }
@@ -80,8 +90,11 @@ export function FeaturedProjectsCarousel({ projects, expanded = false, initialPr
       document.removeEventListener("visibilitychange", pauseWhenHidden)
       if (inertiaRef.current !== null) cancelAnimationFrame(inertiaRef.current)
       inertiaRef.current = null
+      dragRef.current = null
+      delete viewport.dataset.inertia
+      delete viewport.dataset.dragging
     }
-  }, [moveTo, updateVisibleCards, projects, initialProjectId])
+  }, [moveTo, updateVisibleCards, projects, initialProjectId, expanded, looping])
 
   function wrap(position: number) {
     const cycle = projects.length * strideRef.current
@@ -140,7 +153,7 @@ export function FeaturedProjectsCarousel({ projects, expanded = false, initialPr
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (expanded) return
+    if (!looping) return
     if (event.pointerType === "mouse" && event.button !== 0) return
     if (!strideRef.current) return
     if (dragRef.current) return
@@ -213,6 +226,7 @@ export function FeaturedProjectsCarousel({ projects, expanded = false, initialPr
 
   function handleTransitionEnd(event: TransitionEvent<HTMLDivElement>) {
     if (event.target !== trackRef.current || event.propertyName !== "transform") return
+    if (!looping) return
 
     const count = projects.length
     if (indexRef.current < count) indexRef.current += count
@@ -222,7 +236,7 @@ export function FeaturedProjectsCarousel({ projects, expanded = false, initialPr
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (expanded) return
+    if (!looping) return
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
     event.preventDefault()
     if (inertiaRef.current !== null && trackRef.current) {
@@ -257,7 +271,7 @@ export function FeaturedProjectsCarousel({ projects, expanded = false, initialPr
       onKeyDown={handleKeyDown}
     >
       <div className="featured-track" ref={trackRef} onTransitionEnd={handleTransitionEnd}>
-        {[0, 1, 2].flatMap((copy) =>
+        {(looping ? [0, 1, 2] : [1]).flatMap((copy) =>
           projects.map((project) => (
             <div className="project-card-wrap" key={`${copy}-${project.id}`} data-copy={copy}>
             <Link
@@ -289,7 +303,7 @@ export function FeaturedProjectsCarousel({ projects, expanded = false, initialPr
                 <span className="orb-card-arrow" aria-hidden="true">→</span>
               </div>
             </Link>
-            {project.link && <a className="project-visit-link" href={project.link} target="_blank" rel="noreferrer" draggable={false} onDragStart={event=>event.preventDefault()} onPointerDown={event=>event.stopPropagation()}>사이트 방문 ↗</a>}
+            {project.link && <a className="project-visit-link" href={project.link} target="_blank" rel="noreferrer" tabIndex={copy === 1 ? 0 : -1} draggable={false} onDragStart={event=>event.preventDefault()} onPointerDown={event=>event.stopPropagation()}>사이트 방문 ↗</a>}
             </div>
           )),
         )}
